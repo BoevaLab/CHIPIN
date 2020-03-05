@@ -1,22 +1,3 @@
----
-title: "CHIPIN-vignette"
-output: rmarkdown::html_vignette
-text-align: justify}
-vignette: >
-  %\VignetteIndexEntry{CHIPIN-vignette}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
-
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
-```
-
-
-
 #Introduction
 
 CHIPIN is a R package that aims to provide a normalization procedure to compare ChIP-seq signals between different conditions/samples when spike-in information is not available. The normalization procedure is based on the assumption that on average, no difference in ChIP-seq signal should be observed in the regulatory regions of genes whose expression levels are constant across samples/conditions. Using CHIPIN, the user obtains bigWig files that can be further used to compare intensity of histone modifications or transcription factor binding at specific regions of interest between the different conditions/samples.
@@ -54,7 +35,7 @@ These matrices obtained for each sample/condition are used to infer the normaliz
 + **Quantile normalization**
 + **Linear regression with non-zero intercept**
 
-![](figS2-page-001.jpg){width=85%}
+![](CHIPIN/vignettes/figS2-page-001.jpg){width=85%}
 
 
 ###Quantile normalization
