@@ -43,7 +43,7 @@ R CMD INSTALL pathToArchive.tar.gz
 
 FUNCTIONS
 
-plot_expression function: CHIPIN offers the possibility to profile ChIP-seq intensity around TSS as a function of gene expression level using the function plot_expression. The signal is visualized for three groups of genes obtained with k-means clustering: highly-expressed, medium-expressed and lowly-expressed genes. The results of such visualization are important to verify the efficiency of the antibody used. To use this function, several parameters are mandatory:
+1. plot_expression function: CHIPIN offers the possibility to profile ChIP-seq intensity around TSS as a function of gene expression level using the function plot_expression. The signal is visualized for three groups of genes obtained with k-means clustering: highly-expressed, medium-expressed and lowly-expressed genes. The results of such visualization are important to verify the efficiency of the antibody used. To use this function, several parameters are mandatory:
 
 RPKM: RPKM is the path to RPKM values, each column of the data should correspond to one sample/condition. If one provides raw_read_count data, put NULL for raw_read_count parameter.
 raw_read_count: raw_read_count is the path to raw read count values, each column of the data should correspond to one sample/condition. If one provides raw_read_count data, put NULL for RPKM parameter.
@@ -61,7 +61,7 @@ This function can be also launch directly in the ChIPIN_normalize function by se
 
 
 
-ChIPIN_normalize function: This is the main function of the package that should be used to find the “ConstantGenes” and to perform the normalization process. All the parameters of this function will be explained in the following sections. There is three parts in the ChIPIN_normalize function:
+2. ChIPIN_normalize function: This is the main function of the package that should be used to find the “ConstantGenes” and to perform the normalization process. All the parameters of this function will be explained in the following sections. There is three parts in the ChIPIN_normalize function:
 
 Determine ConstantGenes
 Perform normalization
