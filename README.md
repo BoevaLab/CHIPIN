@@ -93,7 +93,7 @@ To perform normalization, mandatory parameters are:
 Additional parameters can be modified:
 
 * **beforeRegionStartLength** (default: 4000), **afterRegionStartLength** (default: 4000), **regionBodyLength** (default: 40000), **binSize** (default: 10) are “computematrix” function’s parameters.
-* **expression_plot** (default: FALSE) is a boolean parameter, if equal to TRUE the function plot_expression, that wil be further explained in this vignette, will be run.
+* **expression_plot** (default: FALSE) is a boolean parameter, if equal to TRUE the function plot_expression, previously mentionned, will be run.
 * **compute_stat** (default: FALSE) is a boolean parameter, if equal to TRUE, CHIPIN will compute statistics illustrating sucess of the normalization process (i. e. the relative difference between average signal curves before and after the normalization).
 * **typeNorm** (default: “quantile”) can be “quantile” or “linear”.
 * **nGroup** (default: 20) is a parameter dedicated to quantile normalization.
