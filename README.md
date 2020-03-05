@@ -38,8 +38,8 @@ https://deeptools.readthedocs.io/en/develop/content/installation.html
 
 INSTALLATION
 
-After downloading the .tar.gz archive, one should run: 
-R CMD INSTALL pathToArchive.tar.gz
+After downloading the .zip archive, one should un-zip it and run: 
+R CMD INSTALL pathTo/CHIPIN-master
 
 FUNCTIONS
 
