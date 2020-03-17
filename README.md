@@ -9,23 +9,41 @@ ChIPIN is a R package that aim to provide a normalization procedure to compare s
 ## REQUIREMENT
 
 Some R libraries are required:
+
 stringr
+
 rtracklayer
+
 GenomicFeatures
+
 ggplot2
+
 matrixStats
+
 viridis
+
 preprocessCore
+
 tidyr
+
 plotrix
+
 rlist
+
 RColorBrewer
+
 tiger
+
 pracma
+
 dplyr
+
 gridExtra
+
 biomaRt
+
 rminer
+
 ggpubr
 
 
