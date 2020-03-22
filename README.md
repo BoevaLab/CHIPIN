@@ -8,13 +8,13 @@ CHIPIN is an R package that provides a normalization procedure to compare signal
 
 ## REQUIREMENTS
 
-1. The R libraries listed below are required. They should be automatically installed when you run the intallation of CHIPIN via devtools:
+1. The R libraries listed below are required. They should be *automatically* installed when you run the intallation of CHIPIN via devtools:
 
 
 ```
 install.packages(devtools)
 library(devtools)
-devtools::install_github("BoevaLab/CHIPIN")
+devtools::install_github("BoevaLab/CHIPIN", build_vignettes = TRUE)
 ```
 
 You can also install them manually:
@@ -41,7 +41,7 @@ Use devtools for installation of CHIPIN from GitHub:
 ```
 install.packages(devtools)
 library(devtools)
-devtools::install_github("BoevaLab/CHIPIN")
+devtools::install_github("BoevaLab/CHIPIN", build_vignettes = TRUE)
 ```
 
 Alternatively, after downloading the .zip archive, one should un-zip it and run: 
