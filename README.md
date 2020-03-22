@@ -3,60 +3,48 @@ ChIP-seq Intersample Normalization
 
 ## INTRODUCTION
 
-ChIPIN is a R package that aim to provide a normalization procedure to compare signals between different conditions/samples of a different ChIP-seq experiment using the same antibody. It will output the resulting density profiles. The normalization is based on the assumption that no differences in ChIP-seq signal should be observed in the regulatory regions of genes whom expression does not change across samples/conditions. Moreover, ChIPIN provides a possibility to qualify the efficiency of the antibody used in the ChIP-seq experiment. 
+CHIPIN is an R package that provides a normalization procedure to compare signals between ChIP-seq samples in different conditions; experiments should be performed using the same antibody. CHIPIN output includes normalized density profiles and several statistics describing the characteristics of the normalization procedure. The normalization is based on the assumption that no differences in ChIP-seq signal should be observed in the regulatory regions of genes whose expression does not change across samples/conditions. Moreover, CHIPIN provides a possibility to qualify the antibody used in the ChIP-seq experiments by plotting ChIP-seq signal density around gene transcription start sites for highly, medium and lowly expressed genes.
 
 
-## REQUIREMENT
+## REQUIREMENTS
 
-Some R libraries are required:
+1. The R libraries listed below are required. They should be automatically installed when you run the intallation of CHIPIN via devtools:
 
-stringr
 
-rtracklayer
+```
+install.packages(devtools)
+library(devtools)
+devtools::install_github("BoevaLab/CHIPIN")
+```
 
-GenomicFeatures
-
-ggplot2
-
-matrixStats
-
-viridis
-
-preprocessCore
-
-tidyr
-
-plotrix
-
-rlist
-
-RColorBrewer
-
-tiger
-
-pracma
-
-dplyr
-
-gridExtra
-
-biomaRt
-
-rminer
-
-ggpubr
+You can also install them manually:
+CRAN libraries:
+```
+install.packages(c("stringr", "ggplot2", "matrixStats", "viridis", "tidyr", "plotrix", "rlist", "RColorBrewer", "tiger", "pracma", "dplyr", "gridExtra", "rminer"))
+```
+Bioconductor libraries:
+```
+BiocManager::install(c("rtracklayer", "preprocessCore", "GenomicFeatures", "biomaRt", "ggpubr"))
+```
 
 
 
-
-Deeptools is also required.
+2. Deeptools installation is required.
 Please see additional Python libraries required for Deeptools.
 https://deeptools.readthedocs.io/en/develop/content/installation.html
 
 
 ## INSTALLATION
 
-After downloading the .zip archive, one should un-zip it and run: 
+Use devtools for installation of CHIPIN from GitHub:
+
+```
+install.packages(devtools)
+library(devtools)
+devtools::install_github("BoevaLab/CHIPIN")
+```
+
+Alternatively, after downloading the .zip archive, one should un-zip it and run: 
 R CMD INSTALL pathTo/CHIPIN-master
 
 ## FUNCTIONS
@@ -64,66 +52,110 @@ R CMD INSTALL pathTo/CHIPIN-master
 ### plot_expression function: 
 CHIPIN offers the possibility to profile ChIP-seq intensity around TSS as a function of gene expression level using the function plot_expression. The signal is visualized for three groups of genes obtained with k-means clustering: highly-expressed, medium-expressed and lowly-expressed genes. The results of such visualization are important to verify the efficiency of the antibody used. To use this function, several parameters are mandatory:
 
-* **RPKM** is the path to RPKM values, each column of the data should correspond to one sample/condition. If one provides raw_read_count data, put NULL for raw_read_count parameter.
-* **raw_read_count** is the path to raw read count values, each column of the data should correspond to one sample/condition. If one provides raw_read_count data, put NULL for RPKM parameter.
-* **fileWithPaths** is a textfile with lines corresponding to the paths to the bigWig files.
-* **output_dir** is the path to the directory where one wants to store all output of the ChIPIN_normalize function. This directory should be created before running the function.
-* **organism** is one of “hg19”, “hg38”, “mm9” or “mm10”.
+* **RPKM**: path to a gene expression file (RPKM values): first column should contain gene names (official gene symbol), each following column should correspond to one sample/condition. The order of values should correspond to the order of .bigWig files in "path_to_bw". If you provide the "RPKM" parameter, do not use the "raw_read_count" parameter. Default: NULL.
+* **raw_read_count**: path to a gene expression file (raw read count values): first column should contain gene names (official gene symbol), each following column should correspond to one sample/condition. The order of values should correspond to the order of .bigWig files in "path_to_bw". Raw read count values will be transformed into RPKM values using information on exon lengths. If you provide the "raw_read_count" parameter, do not use the "RPKM" parameter. Default: NULL.
+* **path_to_bw**: a vector containing paths to .bigWig files of the samples/conditions of interest. ! Mandatory parameter.
+* **output_dir**: path to the output directory where one wants to store the ouput files. This directory should be created before running the function. Default: "." 
+* **organism**: is one of “hg19”, “hg38”, “mm9” or “mm10”. ! Mandatory parameter with no default value. 
 
-One additional parameter can be modified:
+One optional parameter can be set:
 
-* **histoneMark** (default: “ChIP-seq signal”) will be used for the legend of the figures.
+* **histone_mark** name of the histone mark of interest; used to plot legends. Default:"ChIP-seq signal"
 
 ```
-plot_expression(RPKM, raw_read_count, fileWithPaths, output_dir, organism, histoneMark="ChIP-seq signal")
+#### Usage:
+
+##### using RPKM values:
+plot_expression(RPKM, raw_read_count=NULL, path_to_bw, output_dir=".", organism, histone_mark="ChIP-seq signal")
+
+##### using raw read count values:
+plot_expression(RPKM=NULL, raw_read_count, path_to_bw, output_dir=".", organism, histone_mark="ChIP-seq signal")
 ```
 
-This function can be also launch directly in the ChIPIN_normalize function by setting the parameter expression_plot to TRUE.
+This function can be also launched directly in the CHIPIN_normalize function by setting the parameter expression_plot to TRUE.
 
 
 
-### ChIPIN_normalize function
-This is the main function of the package that should be used to find the “ConstantGenes” and to perform the normalization process. All the parameters of this function will be explained in the following sections. There is three parts in the ChIPIN_normalize function:
+### CHIPIN_normalize function
+This is the main function of the package; it identifies genes that do not change their expression across the conditions ("constant_genes") and performs the normalization. All the parameters of this function are explained in the following sections. There are three steps performed by the CHIPIN_normalize function:
 
-* Determine ConstantGenes
+* Determine constant_genes
 * Perform normalization
 * Compute statistics
 
-Common parameters for the three parts of ChIPIN_normalize function:
+Common parameters for the three steps of CHIPIN_normalize function:
 
-* **sample_name** will be used as a prefix for the different parameters.
-* **output_dir** is the path to the directory where one wants to store all output of the ChIPIN_normalize function. This directory should be created before running the function.
-* **organism** is one of “hg19”, “hg38”, “mm9” or “mm10”.
+* **sample_name**: will be used as a prefix for the different outputs. Default:"sample"
+* **output_dir**: path to the output directory where one wants to store the ouput files. This directory should be created before running the function. Default: "."
+* **organism**: is one of “hg19”, “hg38”, “mm9” or “mm10”.
 
-To determine “ConstantGenes”, the mandatory parameters are:
+To determine “constant_genes”, the mandatory parameters are:
 
-* **RPKM** is the path to RPKM values, each column of the data should correspond to one sample/condition. If one provides raw_read_count data, put NULL for raw_read_count parameter.
-* **raw_read_count** is the path to raw read count values, each column of the data should correspond to one sample/condition. If one provides raw_read_count data, put NULL for RPKM parameter.
+* **RPKM**: path to a gene expression file (RPKM values): first column should contain gene names (official gene symbol), each following column should correspond to one sample/condition. The order of values should correspond to the order of .bigWig files in "path_to_bw". RPKM values will be transformed into "raw_read_count" values using information on exon lengths; then, "raw_read_count" values will be used to determine genes whose expression does not change across all the conditions ("constant_genes"). If you provide the "RPKM" parameter, do not use the "raw_read_count" parameter. If both "RPKM and "raw_read_count" parameters are set to NULL, and "path_to_file_with_constant_genes" is NULL too, then all genes will be used for the normalization; "expression_plot" (see below) will be set to FALSE. Default: NULL
+* **raw_read_count**: path to a gene expression file (raw read count values): first column should contain gene names (official gene symbol), each following column should correspond to one sample/condition. The order of values should correspond to the order of .bigWig files in "path_to_bw". If you provide the "raw_read_count" parameter, do not use the "RPKM" parameter. If both "RPKM and "raw_read_count" parameters are set to NULL, and "path_to_file_with_constant_genes" is NULL too, then all genes will be used for the normalization; "expression_plot" (see below) will be set to FALSE. Default: NULL
 
-Other paramaters can be modified :
+Optional paramaters:
+* **percentage**: a value between 0 and 1 describing the percentage of the total number of genes that one wants to be defined as "constant_genes". Default: 0.1
+* **path_to_file_with_constant_genes**: path to a .bed file with genes that do not change their expression across the conditions ("constant_genes"). If left emtpy (NULL), the list of constant genes will be determined automatically using either "RPKM" or "raw_read_count" values. Default:NULL
 
-* **percentage** (default: 10) corresponds to the percentage of all genes that will be selected as ConstantGenes.
-* **pathToFileGenesNotMoving** (default: NULL) is the path to a bed file containing “ConstantGenes”.
+To perform normalization, the mandatory parameter is:
 
-To perform normalization, mandatory parameters are:
-* **fileWithPaths** is a textfile with lines corresponding to the paths to the bigWig files.
+* **path_to_bw**: a vector containing paths to .bigWig files of the samples/conditions of interest. ! Mandatory parameter with no default value
 
-Additional parameters can be modified:
-
-* **beforeRegionStartLength** (default: 4000), **afterRegionStartLength** (default: 4000), **regionBodyLength** (default: 40000), **binSize** (default: 10) are “computematrix” function’s parameters.
-* **expression_plot** (default: FALSE) is a boolean parameter, if equal to TRUE the function plot_expression, previously mentionned, will be run.
-* **compute_stat** (default: FALSE) is a boolean parameter, if equal to TRUE, CHIPIN will compute statistics illustrating sucess of the normalization process (i. e. the relative difference between average signal curves before and after the normalization).
-* **typeNorm** (default: “quantile”) can be “quantile” or “linear”.
-* **nGroup** (default: 20) is a parameter dedicated to quantile normalization.
-* **histoneMark** (default: “ChIP-seq signal”) is used in the legend of plots.
+Optional parameters:
+* **type_norm**: type of normalization to perform: 'linear' or 'quantile'. Default: 'linear'
+* **beforeRegionStartLength** (default: 4000), **afterRegionStartLength** (default: 4000), **regionBodyLength** (default: 40000), **binSize** (default: 10): parameters of the “computematrix” function of deeptools. They correspond to distance upstream of the reference-point selected, distance downstream of the reference-point selected, distance in bases to which all regions will be fit, and length, in bases, of the non-overlapping bins for averaging the score over the regions length, respectively. See https://deeptools.readthedocs.io/en/develop/content/tools/computeMatrix.html for more details
+* **expression_plot**: boolean parameter, use "expression_plot=TRUE"" to call function “plot_expression” to plot the density signal around gene TSS. Default: FALSE
+* **compute_stat**: boolean parameter, use "compute_stat=TRUE" to compute statisctics characterizing the normalization process. This statistic will be written in the "output_StatsFile.txt" file located in the output_folder and will show how much the normalization reduced the difference between the samples/conditions. Default:FALSE
+* **nGroup**: number of gene groups for quantile normalisation. Default: 20
+* **histone_mark**: name of the histone mark of interest; used to plot legends. Default:"ChIP-seq signal"
 
 ```
-ChIPIN_normalize(RPKM, raw_read_count, pathToFileGenesNotMoving=NULL, sample_name, output_dir, organism, fileWithPaths, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=10, typeNorm="quantile", nGroup=20, histoneMark="ChIP-seq signal")
+#### Usage:
+CHIPIN_normalize(path_to_bw, ...)
+
+##### Using RPKM values:
+CHIPIN_normalize(path_to_bw, type_norm="linear", RPKM, raw_read_count=NULL, path_to_file_with_constant_genes=NULL, sample_name, output_dir=".", organism, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal")
+
+
+##### Using raw read count values:
+CHIPIN_normalize(path_to_bw, type_norm="linear", RPKM=NULL, raw_read_count, path_to_file_with_constant_genes=NULL, sample_name, output_dir=".", organism, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal")
+
+
+##### Using constant genes provided by the user:
+CHIPIN_normalize(path_to_bw, type_norm="linear", RPKM=NULL, raw_read_count=NULL, path_to_file_with_constant_genes, sample_name, output_dir=".", organism, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal")
+
+
+##### Using all genes (not recommended):
+CHIPIN_normalize(path_to_bw, type_norm="linear", RPKM=NULL, raw_read_count=NULL, path_to_file_with_constant_genes=NULL, sample_name, output_dir=".", organism, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal")
+
+
 ```
 
 
 ## EXAMPLES: 
 
-Examples for running the two functions are provided in the vignette file included in the zip file "CHIPIN-vignette.html". 
+```
+library(CHIPIN)
+
+#initialize parameters:
+pathToRPKMfile = system.file("extdata", "FPKM_values_CLBBER_CLBMA_SJNB12.txt", package = "CHIPIN")
+pathToFiles = system.file("extdata", c("CLBBER.K27ac.rep3.bw","SJNB12.K27ac.rep3.bw","CLBMA.K27ac.rep3.bw"), package = "CHIPIN")
+outputFolder = "." #create the corresponding output folder if it does not exists
+histoneMarkName = "H3K27Ac"
+sampleName = "neuroblastoma"
+
+
+#normalize the data without plotting the distribution around gene TSS (quantile normalization, expression_plot=FALSE):
+CHIPIN_normalize(path_to_bw=pathToFiles, type_norm="quantile", RPKM=pathToRPKMfile, sample_name=sampleName, output_dir=outputFolder, organism="hg19", compute_stat=TRUE, percentage=0.1, nGroup=20, histone_mark=histoneMarkName)
+
+
+#normalize the data and plot the distribution around gene TSS (linear normalization, expression_plot=TRUE):
+CHIPIN_normalize(path_to_bw=pathToFiles, type_norm="linear", RPKM=pathToRPKMfile, sample_name=sampleName, output_dir=outputFolder, organism="hg19", expression_plot=TRUE, compute_stat=TRUE, histone_mark=histoneMarkName)
+
+
+```
+
+Examples for running the two functions are also provided in the vignette file included in the package: file "CHIPIN-vignette.html". 
 
 

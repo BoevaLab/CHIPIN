@@ -1,3 +1,0 @@
-data/CLBBER.K27ac.rep3.bw
-data/SJNB12.K27ac.rep3.bw
-data/CLBMA.K27ac.rep3.bw

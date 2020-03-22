@@ -4,8 +4,8 @@ Title: ChIP-seq Intersamples Normalization
 Version: 0.1.0
 Author: L. Polit
 Maintainer: L. Polit <lelia-polit@orange.fr>
-Description: The goal of ChIPIN is to provide a normalization procedure to compare signals between different conditions/samples from different ChIP-seq experiments using the same antibody. It will output the resulting density profiles. The normalization is based on the assumption that no differences in ChIP-seq signal should be observed in the regulatory regions of genes whom expression does not change across samples/conditions. Moreover, ChIPIN provides a possibility to qualify the efficiency of the antibody used in the ChIP-seq experiment. 
-License: What license is it under?
+Description: The ChIPIN package provides a normalization procedure to compare ChIP-seq signals between different conditions; experiments should be performed using the same antibody. Output includes normalized density profiles and additional statistics characterizing the normalization procedure. The normalization is based on the assumption that no differences in ChIP-seq signal should be observed in the regulatory regions of genes whose expression does not change across samples/conditions. Moreover, ChIPIN provides a possibility to qualify the antibody used in the ChIP-seq experiments by plotting ChIP-seq signal density around gene transcription start sites for highly, medium and lowly expressed genes. 
+License: GNU GENERAL PUBLIC LICENSE
 Encoding: UTF-8
 LazyData: false
 Depends:
@@ -27,6 +27,7 @@ Depends:
   gridExtra,
   biomaRt,
   rminer
+biocViews:
 Imports:
   stringr,
   rtracklayer,

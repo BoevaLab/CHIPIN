@@ -1,3 +1,0 @@
-/home/lelia/R/x86_64-pc-linux-gnu-library/3.5/CHIPIN/data/CLBBER.K27ac.rep3.bw
-/home/lelia/R/x86_64-pc-linux-gnu-library/3.5/CHIPIN/data/SJNB12.K27ac.rep3.bw
-/home/lelia/R/x86_64-pc-linux-gnu-library/3.5/CHIPIN/data/CLBMA.K27ac.rep3.bw

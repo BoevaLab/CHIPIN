@@ -1,21 +1,21 @@
-library(stringr)
-library(rtracklayer)
-library(ggplot2)
-library(matrixStats)
-library(viridis)
-library(preprocessCore)
-library(tidyr)
-library(plotrix)
-library(rlist)
-library(RColorBrewer)
-library(tiger)
-library(pracma)
-library(GenomicFeatures)
-library(dplyr)
-library(gridExtra)
-library(biomaRt)
-library(rminer)
-library(ggpubr)
+# library(stringr)
+# library(rtracklayer)
+# library(ggplot2)
+# library(matrixStats)
+# library(viridis)
+# library(preprocessCore)
+# library(tidyr)
+# library(plotrix)
+# library(rlist)
+# library(RColorBrewer)
+# library(tiger)
+# library(pracma)
+# library(GenomicFeatures)
+# library(dplyr)
+# library(gridExtra)
+# library(biomaRt)
+# library(rminer)
+# library(ggpubr)
 
 
 ###
@@ -49,63 +49,62 @@ correctbigwigscore <-function(bw, a, b){
 #Take as input a gtf file of the exons for the current organism
 #######
 create_exons <- function(gtf_file){
-  exons_mm10_Jan19 <- read.delim(gtf_file)
+  exon_table <- read.delim(gtf_file)
   #
   #Correct the name field (remove the number after the point at the end)
-  exons_mm10_Jan19$name=str_split(exons_mm10_Jan19$name, "[.]", 2, simplify=TRUE)[,1]
-  colnames(exons_mm10_Jan19)=c("ENSEMBL_ID", colnames(exons_mm10_Jan19)[2:8])
-  exons_mm10_Jan19_geneName=merge(exons_mm10_Jan19, corres, by="ENSEMBL_ID", all.x=F, all.y=F)
+  exon_table$name=str_split(exon_table$name, "[.]", 2, simplify=TRUE)[,1]
+  colnames(exon_table)=c("ENSEMBL_ID", colnames(exon_table)[2:8])
+  exon_table_geneName=merge(exon_table, corres, by="ENSEMBL_ID", all.x=F, all.y=F)
   #
 
-  exons_mm10_Jan19_geneName=exons_mm10_Jan19_geneName[which(exons_mm10_Jan19_geneName$geneName != ""),]
+  exon_table_geneName=exon_table_geneName[which(exon_table_geneName$geneName != ""),]
 
   #Compute exons length VERSION2
-  exonsLength=c()
+  exon_lengths=c()
   geneName=c()
-  for (k in 1:nrow(exons_mm10_Jan19_geneName)){
+  for (k in 1:nrow(exon_table_geneName)){
     # #for (k in 1:10){
     total=0
-    if (as.character(unlist(exons_mm10_Jan19_geneName[k,]$geneName)) %ni% geneName){
-      tmp=which(exons_mm10_Jan19_geneName$geneName == (exons_mm10_Jan19_geneName[k,]$geneName))
-      tmp_dataframe=exons_mm10_Jan19_geneName[tmp,]
+    if (as.character(unlist(exon_table_geneName[k,]$geneName)) %ni% geneName){
+      tmp=which(exon_table_geneName$geneName == (exon_table_geneName[k,]$geneName))
+      tmp_dataframe=exon_table_geneName[tmp,]
       start=c()
       stop=c()
       for (i in 1:length(tmp)){
-        start=c(start, noquote(str_split(exons_mm10_Jan19_geneName[tmp[i],]$exonStarts, "[,]", exons_mm10_Jan19_geneName[tmp[i],]$exonCount+1, simplify=TRUE)))
+        start=c(start, noquote(str_split(exon_table_geneName[tmp[i],]$exonStarts, "[,]", exon_table_geneName[tmp[i],]$exonCount+1, simplify=TRUE)))
         start=start[which(start != "")]
-        stop=c(stop, noquote(str_split(exons_mm10_Jan19_geneName[tmp[i],]$exonEnds, "[,]", exons_mm10_Jan19_geneName[tmp[i],]$exonCount+1, simplify=TRUE)))
+        stop=c(stop, noquote(str_split(exon_table_geneName[tmp[i],]$exonEnds, "[,]", exon_table_geneName[tmp[i],]$exonCount+1, simplify=TRUE)))
         stop=stop[which(stop != "")]
       }
       df_tmp=data.frame()
-      df_tmp=data.frame(rep(exons_mm10_Jan19_geneName[tmp[1],]$chrom, length(start)), start, stop, rep(exons_mm10_Jan19_geneName[tmp[1],]$strand, length(start)), rep(as.character(unlist(exons_mm10_Jan19_geneName[tmp[1],]$geneName)), length(start)))
+      df_tmp=data.frame(rep(exon_table_geneName[tmp[1],]$chrom, length(start)), start, stop, rep(exon_table_geneName[tmp[1],]$strand, length(start)), rep(as.character(unlist(exon_table_geneName[tmp[1],]$geneName)), length(start)))
       colnames(df_tmp)=c("chrom", "start", "stop", "strand", "geneName")
       tmp_Gr=makeGRangesFromDataFrame(df_tmp, keep.extra.columns=TRUE, start.field="start",  end.field="stop")
-      exonsLength=c(exonsLength, sum(width(reduce(tmp_Gr))))
-      geneName=c(geneName, as.character(unlist(exons_mm10_Jan19_geneName[tmp[1],]$geneName)))
+      exon_lengths=c(exon_lengths, sum(width(reduce(tmp_Gr))))
+      geneName=c(geneName, as.character(unlist(exon_table_geneName[tmp[1],]$geneName)))
     }
   }
 
-  A=data.frame(geneName, exonsLength)
+  A=data.frame(geneName, exon_lengths)
   return(A)
-  #write.table(A, "/home/caramelito/NAS_Public/data/annotations/Mouse/mm10/GENCODE/exons_mm10_Jan19_length.txt", quote=F, row.names=F, col.names=F, sep="\t")
 
 }
 
 #######
-#RPKMvalues should have two columns: one with geneName the second with RPKM values.
-#exonsLength should have two columns: one with geneName the second with gene length
+#RPKM values should have two columns: the first column with gene names, the second one with RPKM values.
+#exon_lengths should have two columns: one with gene names, the second with gene lengths
 #######
-get_readCounts<-function(RPKMvalues, exonsLength){
+get_readCounts<-function(RPKMvalues, exon_lengths){
   colnames(RPKMvalues)=c("geneName", "value")
-  colnames(exonsLength)=c("geneName", "value")
-  exonsnames=t(exonsLength$geneName)
+  colnames(exon_lengths)=c("geneName", "value")
+  exonsnames=t(exon_lengths$geneName)
   readCounts=c()
   geneName=c()
   for (k in 1:nrow(RPKMvalues)){
     if (as.character(unlist(RPKMvalues[k,]$geneName)) %in% exonsnames){
-      tmp=which(as.character(unlist(exonsLength$geneName)) == as.character(unlist(RPKMvalues[k,]$geneName)))
+      tmp=which(as.character(unlist(exon_lengths$geneName)) == as.character(unlist(RPKMvalues[k,]$geneName)))
       geneName=c(geneName, as.character(unlist(RPKMvalues[k,]$geneName)))
-      readcount=(RPKMvalues[k,]$value*exonsLength[tmp,]$value)
+      readcount=(RPKMvalues[k,]$value*exon_lengths[tmp,]$value)
       readCounts=c(readCounts, readcount)
     }
   }
@@ -116,20 +115,20 @@ get_readCounts<-function(RPKMvalues, exonsLength){
 
 
 #######
-#raw read counts values should have two columns: one with geneName the second with raw read count values.
-#exonsLength should have two columns: one with geneName the second with gene length
+#raw read counts values should have two columns: the first one with gene names, the second one with raw read count values.
+#exon_lengths should have two columns: one with gene names, the second with gene lengths
 #######
-get_RPKM<-function(raw_read_count, exonsLength){
+get_RPKM<-function(raw_read_count, exon_lengths){
   colnames(raw_read_count)=c("geneName", "value")
-  colnames(exonsLength)=c("geneName", "value")
+  colnames(exon_lengths)=c("geneName", "value")
   RPKM_final=c()
   geneName=c()
 
   for (k in 1:nrow(raw_read_count)){
-    if (as.character(unlist(raw_read_count[k,]$geneName)) %in% as.character(unlist(exonsLength$geneName))){
-      tmp=which(as.character(unlist(exonsLength$geneName)) == as.character(unlist(raw_read_count[k,]$geneName)))
+    if (as.character(unlist(raw_read_count[k,]$geneName)) %in% as.character(unlist(exon_lengths$geneName))){
+      tmp=which(as.character(unlist(exon_lengths$geneName)) == as.character(unlist(raw_read_count[k,]$geneName)))
       geneName=c(geneName, as.character(unlist(raw_read_count[k,]$geneName)))
-      RPKM_val=ceiling(raw_read_count[k,]$value/exonsLength[tmp,]$value)*((10^9)/sum(raw_read_count$value))
+      RPKM_val=ceiling(raw_read_count[k,]$value/exon_lengths[tmp,]$value)*((10^9)/sum(raw_read_count$value))
 
       RPKM_final=c(RPKM_final, RPKM_val)
 
@@ -210,16 +209,16 @@ getDatabw_woRemoveNoise <- function(bwDox0){
 
 
 #######
-#take as input either RPKM or raw read count (put None for the one you don't give) and find genes that are constant between samples/conditions
+#take as input either RPKM or raw read count (put NULL for the one you do not provide) and find genes that are constant between samples/conditions
 #######
-find_gene_not_moving <- function(RPKM, raw_read_count, sample_name, output_dir, exons_length, Allgenes, percentage){
+find_gene_not_moving <- function(RPKM, raw_read_count, sample_name, output_dir, exon_lengths, Allgenes, percentage){
   ######################################
   #Step1: Find genes that do not move
   ######################################
   cat("\n")
   cat("*****************************************")
   cat("\n")
-  cat("Will find ConstantGenes")
+  cat("Find constant genes")
   cat("\n")
   cat("*****************************************")
   cat("\n")
@@ -229,7 +228,7 @@ find_gene_not_moving <- function(RPKM, raw_read_count, sample_name, output_dir, 
   ####
   if (is.null(raw_read_count)==FALSE & is.null(RPKM)==TRUE){
     cat("\n")
-    cat("Will use raw read count to find ConstantGenes")
+    cat("Will use raw read count to find constant genes")
     cat("\n")
     CPM_rep=read.table(raw_read_count, header=TRUE)
     n_samples=ncol(CPM_rep)-1
@@ -249,7 +248,8 @@ find_gene_not_moving <- function(RPKM, raw_read_count, sample_name, output_dir, 
     CPM_rep_matrix_SD=apply(Df_matrix_NoDup[,2:ncol(CPM_rep)], 1, sd)
     #Plot
     pdf(paste(output_dir, sample_name, "_CPMmeanVSsd.pdf", sep=""), width=5, height=5)
-    plot(log2(CPM_rep_matrix_mean+1), log2(CPM_rep_matrix_SD+1), xlim=c(0, max(log2(CPM_rep_matrix_mean+1))+5), ylim=c(0, max(log2(CPM_rep_matrix_SD+1))+5), type="p")
+    plot(log2(CPM_rep_matrix_mean+1), log2(CPM_rep_matrix_SD+1), xlim=c(0, max(log2(CPM_rep_matrix_mean+1))+5), 
+         ylim=c(0, max(log2(CPM_rep_matrix_SD+1))+5), type="p", xlab="log2(Average_CPM+1)", ylab="log2(SD_CPM+1)")
 
     #Now we have to select genes that do not move
     namesCorres=Df_matrix_NoDup[,1]
@@ -263,13 +263,13 @@ find_gene_not_moving <- function(RPKM, raw_read_count, sample_name, output_dir, 
 
     #Define the number of genes to extract from each bin: nbGenesToPick
     ntot=dim(Df_matrix_NoDup)[1]
-    nNotMove=round(ntot*(percentage/100))
+    nNotMove=round(ntot*(percentage)) # now percentage varies between 0 and 1.
     nbGenesPerBins=floor(ntot/100)
     nbGenesToPick=round(nNotMove/100)
 
-    genesNotMoving_sd=c()
-    genesNotMoving_names=c()
-    genesNotMoving_mean=c()
+    constant_genes_sd=c()
+    constant_genes_names=c()
+    constant_genes_mean=c()
     #Through the 100 bins
     for (j in 1:100){
       start=nbGenesPerBins*(j-1)+1
@@ -278,25 +278,25 @@ find_gene_not_moving <- function(RPKM, raw_read_count, sample_name, output_dir, 
       tmp_val=order(CPMvalues_SD_ordered[start:stop])
       tmp_val=start+tmp_val-1
       tmp_names=as.character(unlist(namesCorresOrdered[tmp_val]))
-      genesNotMoving_names=c(genesNotMoving_names, head(tmp_names, nbGenesToPick))
-      genesNotMoving_sd=c(genesNotMoving_sd, head(as.numeric(unlist(CPMvalues_SD_ordered[tmp_val])), nbGenesToPick))
-      genesNotMoving_mean=c(genesNotMoving_mean, head(as.numeric(unlist(CPMvalues_mean_ordered[tmp_val])), nbGenesToPick))
+      constant_genes_names=c(constant_genes_names, head(tmp_names, nbGenesToPick))
+      constant_genes_sd=c(constant_genes_sd, head(as.numeric(unlist(CPMvalues_SD_ordered[tmp_val])), nbGenesToPick))
+      constant_genes_mean=c(constant_genes_mean, head(as.numeric(unlist(CPMvalues_mean_ordered[tmp_val])), nbGenesToPick))
     }
 
-    tmp_geneToColor=which(namesCorresOrdered %in% genesNotMoving_names)
+    tmp_geneToColor=which(namesCorresOrdered %in% constant_genes_names)
     #Colors on the plot sd function of mean the genes that are not moving in red.
     CPMvalues_mean_colors=CPMvalues_mean_ordered[tmp_geneToColor]
     CPMvalues_SD_colors=CPMvalues_SD_ordered[tmp_geneToColor]
-    points(log2(CPMvalues_mean_colors+1), log2(CPMvalues_SD_colors+1), col="red", pch=16)
+    points(log2(CPMvalues_mean_colors+1), log2(CPMvalues_SD_colors+1), col="red", pch=1)
     dev.off()
     #####
     #Use RPKM
     #####
   }else if (is.null(RPKM)==FALSE & is.null(raw_read_count)==TRUE){
     cat("\n")
-    cat("Will use RPKM to find ConstantGenes")
+    cat("Will use RPKM to find constant genes")
     cat("\n")
-    RPKM_rep=read.table(RPKM, header=FALSE)
+    RPKM_rep=read.table(RPKM, header=TRUE)
     #Remove RPKM with a geneName equal to "--"
     RPKM_rep_NoDup=RPKM_rep[which(RPKM_rep$V1 != "--"),]
     n_samples=ncol(RPKM_rep)-1
@@ -304,7 +304,7 @@ find_gene_not_moving <- function(RPKM, raw_read_count, sample_name, output_dir, 
     #Get read counts for each sample
     for (k in 1:(n_samples)){
       RPKM_current=data.frame(RPKM_rep[,1], RPKM_rep[,k+1])
-      tmp=get_readCounts(RPKM_current, exons_length)
+      tmp=get_readCounts(RPKM_current, exon_lengths)
       if (k==1){
         D=data.frame(tmp)
       }else{
@@ -329,7 +329,8 @@ find_gene_not_moving <- function(RPKM, raw_read_count, sample_name, output_dir, 
     D_matrix_SD=apply(Df_matrix_NoDup[, 2:ncol(Df_matrix_NoDup)], 1, sd)
 
     pdf(paste(output_dir, sample_name, "CPMmeanVSsd.pdf", sep=""), width=5, height=5)
-    plot(log2(D_matrix_mean+1), log2(D_matrix_SD+1), xlim=c(0, max(log2(D_matrix_mean+1))+5), ylim=c(0, max(log2(D_matrix_SD+1))+5), type="p")
+    plot(log2(D_matrix_mean+1), log2(D_matrix_SD+1), xlim=c(0, max(log2(D_matrix_mean+1))+5), ylim=c(0, max(log2(D_matrix_SD+1))+5), type="p", 
+         xlab="log2(Average_CPM+1)", ylab="log2(SD_CPM+1)")
 
     #Now we have to select genes that do not move
     namesCorres=Df_matrix_NoDup[,1]
@@ -340,14 +341,14 @@ find_gene_not_moving <- function(RPKM, raw_read_count, sample_name, output_dir, 
     RPMvalues_SD_ordered=D_matrix_SD[tmp_order]
 
     ntot=dim(Df_matrix_NoDup)[1]
-    nNotMove=round(ntot*(percentage/100))
+    nNotMove=round(ntot*(percentage))
     nbGenesPerBins=floor(ntot/100)
     nbGenesToPick=round(nNotMove/100)
 
-    genesNotMoving=c()
-    genesNotMoving_names=c()
-    genesNotMoving_sd=c()
-    genesNotMoving_mean=c()
+    constant_genes=c()
+    constant_genes_names=c()
+    constant_genes_sd=c()
+    constant_genes_mean=c()
     for (j in 1:100){
       start=nbGenesPerBins*(j-1)+1
       stop=(nbGenesPerBins*j)
@@ -357,44 +358,44 @@ find_gene_not_moving <- function(RPKM, raw_read_count, sample_name, output_dir, 
 
       tmp_names=as.character(unlist(namesCorresOrdered[tmp_val]))
 
-      genesNotMoving_names=c(genesNotMoving_names, head(tmp_names, nbGenesToPick))
-      genesNotMoving_sd=c(genesNotMoving_sd, head(as.numeric(unlist(RPMvalues_SD_ordered[tmp_val])), nbGenesToPick))
-      genesNotMoving_mean=c(genesNotMoving_mean, head(as.numeric(unlist(RPMvalues_mean_ordered[tmp_val])), nbGenesToPick))
+      constant_genes_names=c(constant_genes_names, head(tmp_names, nbGenesToPick))
+      constant_genes_sd=c(constant_genes_sd, head(as.numeric(unlist(RPMvalues_SD_ordered[tmp_val])), nbGenesToPick))
+      constant_genes_mean=c(constant_genes_mean, head(as.numeric(unlist(RPMvalues_mean_ordered[tmp_val])), nbGenesToPick))
     }
-    tmp_geneToColor=which(namesCorres %in% genesNotMoving_names)
+    tmp_geneToColor=which(namesCorres %in% constant_genes_names)
     #Colors on the plot sd function of mean the genes that are not moving in red.
     D_matrix_mean_colors=D_matrix_mean[tmp_geneToColor]
     D_matrix_SD_colors=D_matrix_SD[tmp_geneToColor]
-    points(log2(D_matrix_mean_colors+1), log2(D_matrix_SD_colors+1), col="red", pch=16)
+    points(log2(D_matrix_mean_colors+1), log2(D_matrix_SD_colors+1), col="red", pch=1)
     dev.off()
     ######
     # Use all TSS
     ######
   }else if (is.null(raw_read_count)==TRUE & is.null(RPKM)==TRUE){
     cat("\n")
-    cat("Will use all genes as ConstantGenes")
+    cat("Will use all genes as constant genes (not recommended)")
     cat("\n")
     write.table(Allgenes, paste(output_dir, "ConstantGenes.bed", sep=""), quote=F, sep="\t", row.names=F, col.names=F)
     return(paste(output_dir, "ConstantGenes.bed", sep=""))
   }
-  Df_genesNotMoving_names=data.frame(genesNotMoving_names)
-  colnames(Df_genesNotMoving_names)=c("geneName")
+  Df_constant_genes_names=data.frame(constant_genes_names)
+  colnames(Df_constant_genes_names)=c("geneName")
   colnames(Allgenes)=c("chrom", "start", "stop", "geneName", "score", "strand")
 
 
 
 
-  Genes_NotMoving=merge(Df_genesNotMoving_names, Allgenes, by="geneName", all.x=F, all.y=F)
+  Genes_NotMoving=merge(Df_constant_genes_names, Allgenes, by="geneName", all.x=F, all.y=F)
   Genes_NotMovingNEW=data.frame(Genes_NotMoving$chr, Genes_NotMoving$start, Genes_NotMoving$stop, Genes_NotMoving$geneName, "1", Genes_NotMoving$strand)
   colnames(Genes_NotMovingNEW)=c("chrom", "start", "stop", "geneName", "score", "strand")
 
 
   cat(nrow(Genes_NotMovingNEW))
-  cat(" constantGenes have been determined.")
+  cat(" Constant genes have been determined.")
   cat("\n")
 
-  write.table(Genes_NotMovingNEW, paste(output_dir, sample_name, "GenesNotMoving.bed", sep=""), quote=F, sep="\t", row.names=F, col.names=F)
-  return(paste(output_dir, sample_name, "GenesNotMoving.bed", sep=""))
+  write.table(Genes_NotMovingNEW, paste(output_dir, sample_name, "_constant_genes.bed", sep=""), quote=F, sep="\t", row.names=F, col.names=F)
+  return(paste(output_dir, sample_name, "_constant_genes.bed", sep=""))
 }
 
 
@@ -402,7 +403,7 @@ find_gene_not_moving <- function(RPKM, raw_read_count, sample_name, output_dir, 
 #######
 #run deeptools using genes not moving determined by find_gene_not_moving or supplied by the user then perform linear normalization with non zero intercept
 #######
-linear_normalization <- function(genesNotMoving_file, fileWithPaths, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, output_dir){
+linear_normalization <- function(constant_genes_file, path_to_bw, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, output_dir){
   cat("\n")
   cat("*****************************************")
   cat("\n")
@@ -414,16 +415,14 @@ linear_normalization <- function(genesNotMoving_file, fileWithPaths, beforeRegio
   #Initialize the list that will contain the plots before_after
   plist=list()
   listrenorm=c()
-  #Read the file with inputs
-  paths=read.table(fileWithPaths, header=FALSE)
-  nSamples=nrow(paths)
+  nSamples=length(path_to_bw)
 
   if (nSamples>2){
     #Get the median sample
     valMediane=c()
     nameMediane=c()
     for (k in 1:nSamples){
-      bw1=as.character(unlist(paths[[1]][k]))
+      bw1=path_to_bw[k]
       current_bw=getDatabw_woRemoveNoise(bw1)
       current_score=score(current_bw)
       valMediane=c(valMediane, mean(current_score))
@@ -443,7 +442,7 @@ linear_normalization <- function(genesNotMoving_file, fileWithPaths, beforeRegio
     sample_ref=paste(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1], collapse = ".")
   }else{
     ref=1
-    bw1=as.character(unlist(paths[[1]][ref]))
+    bw1=path_to_bw[ref]
     sample_nametmp1=strsplit(bw1, "/")[[1]]
     sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
     sample_ref=paste(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1], collapse = ".")
@@ -459,34 +458,34 @@ linear_normalization <- function(genesNotMoving_file, fileWithPaths, beforeRegio
   listrenorm=c(listrenorm, bw_reference)
   #
   cat("\n")
-  cat("compute deeptools for reference sample")
+  cat("Run deeptools for reference sample")
   cat("\n")
-  system(paste("computeMatrix scale-regions -S", bw1, "-R", genesNotMoving_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name))
+  system(paste("computeMatrix scale-regions -S", bw1, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name))
   matrix <- read.delim(output_name, header=FALSE, comment.char="@")
   val=data.frame(matrix[,7:ncol(matrix)])
   moyC1=apply(val, 2, function(x){return(mean(na.rm=TRUE, as.numeric(as.character(unlist(x)))))})
-  genesNotMoving=read.table(genesNotMoving_file, header=F)
-  colnames(genesNotMoving)=c("chrom", "start", "stop", "geneName", "score", "strand")
-  genesNotMoving2=data.frame(genesNotMoving, genesNotMoving$start)
-  colnames(genesNotMoving2)=c(colnames(genesNotMoving), "peakmax")
+  constant_genes=read.table(constant_genes_file, header=F)
+  colnames(constant_genes)=c("chrom", "start", "stop", "geneName", "score", "strand")
+  constant_genes2=data.frame(constant_genes, constant_genes$start)
+  colnames(constant_genes2)=c(colnames(constant_genes), "peakmax")
   cpt_sample=0
   for (i in 1:nSamples){
     cpt_sample=cpt_sample+1
     if(i==ref) next
     #Compute matrix using computeMatrix from deeptools
-    bw1=as.character(unlist(paths[[1]][i]))
+    bw1=path_to_bw[i]
     sample_nametmp1=strsplit(bw1, "/")[[1]]
     sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
     sample_name=paste(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1], collapse = ".")
     output_name=paste(output_dir, sample_name, ".mat.gz", sep="")
     cat("\n")
-    cat("compute deeptools for sample: ")
+    cat("Run deeptools for sample: ")
     cat(sample_name)
     cat("\n")
 
-    system(paste("computeMatrix scale-regions -S", bw1, "-R", genesNotMoving_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name))
+    system(paste("computeMatrix scale-regions -S", bw1, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name))
     cat("deeptools done")
-    #Now all matrix are computed.
+    #Now all matrices are computed.
 
     #Define a reference to perform the linear regression with non zero intercept
 
@@ -535,16 +534,15 @@ linear_normalization <- function(genesNotMoving_file, fileWithPaths, beforeRegio
 
     listrenorm=c(listrenorm, paste(output_dir, sample_name, ".renormReg.bw", sep=""))
   }
-  write.table(listrenorm, paste(output_dir, "pathRenorm.txt", sep=""), sep="\t", row.names = F, col.names = F, quote=F)
   #ggsave(paste(output_dir, "profiles_samples.pdf", sep=""), gridExtra::marrangeGrob(grobs = plist, nrow=2, ncol=2))
-  return(paste(output_dir, "pathRenorm.txt", sep=""))
+  return(listrenorm)
 }
 
 
 #######
 #run deeptools using genes not moving determined by find_gene_not_moving or supplied by the user then perform quantile normalization
 #######
-quantile_norm <- function(fileWithPaths, genesNotMoving_file, nGroup, output_folder, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize){
+quantile_norm <- function(path_to_bw, constant_genes_file, nGroup, output_folder, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize){
   cat("\n")
   cat("*****************************************")
   cat("\n")
@@ -555,11 +553,10 @@ quantile_norm <- function(fileWithPaths, genesNotMoving_file, nGroup, output_fol
   cat("\n")
   plist=list()
   #Read the file with inputs
-  paths=read.table(fileWithPaths, header=FALSE)
-  nSamples=nrow(paths)
+  nSamples=length(path_to_bw)
   dataToNormHUGE=data.frame()
   for (i in 1:nSamples){
-    current_bw=as.character(unlist(paths[[1]][i]))
+    current_bw=path_to_bw[i]
     sample_nametmp1=strsplit(current_bw, "/")[[1]]
     sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
     sample_name=paste(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1], collapse = ".")
@@ -568,7 +565,7 @@ quantile_norm <- function(fileWithPaths, genesNotMoving_file, nGroup, output_fol
     cat("\n")
     cat(sample_name)
     cat("\n")
-    system(paste("computeMatrix scale-regions -S", current_bw, "-R", genesNotMoving_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name))
+    system(paste("computeMatrix scale-regions -S", current_bw, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name))
     matrix <- read.delim(output_name, header=FALSE, comment.char="@")
     current_values=unlist(matrix[,7:ncol(matrix)], use.names=FALSE)
     current_values[which(is.nan(current_values)==TRUE)]=0
@@ -627,7 +624,7 @@ quantile_norm <- function(fileWithPaths, genesNotMoving_file, nGroup, output_fol
   table_nom=data.frame()
   for (s in 1:nSamples){
     #Get the original bigwig
-    name_bw_old=as.character(unlist(paths[[1]][s]))
+    name_bw_old=path_to_bw[s]
     bw_old=getDatabw_woRemoveNoise(name_bw_old)
     bw_old_toModify=bw_old
     #Learn the transformation to apply
@@ -644,9 +641,7 @@ quantile_norm <- function(fileWithPaths, genesNotMoving_file, nGroup, output_fol
     export(bw_old_toModify, paste(output_folder, "QuantileNorm_", sample_name, ".bw", sep=""))
 
   }
-  output_paths=paste(output_folder, "pathRenorm.txt", sep="")
-  write.table(table_nom, output_paths, row.names=F, col.names=F, quote=F, sep="\n")
-  return(output_paths)
+  return(table_nom)
 }
 
 
@@ -662,18 +657,16 @@ quantile_norm <- function(fileWithPaths, genesNotMoving_file, nGroup, output_fol
 ##################
 
 #OK
-plot_after_quantile<-function(fileWithPaths, output_folder, genesNotMoving, step, DF_after, histoneMark){
-  NotMoving=read.table(genesNotMoving, header=F)
+plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_constant_genes, step, DF_after, histone_mark){
+  NotMoving=read.table(path_to_file_with_constant_genes, header=F)
   colnames(NotMoving)=c("chrom", "start", "stop", "geneName", "score", "strand")
   peakmax=c()
   for (k in 1:nrow(NotMoving)){
     peakmax=c(peakmax, NotMoving[k,]$start)
   }
   NotMoving$peakmax=peakmax
-  paths=read.table(fileWithPaths, header=FALSE)
-
   #Define the number of plots: There will be 5 samples per plot including one "reference" sample which will be present on each plot
-  nSamples=nrow(paths)
+  nSamples=length(path_to_bw)
   if (nSamples!=5){
     #nSamples_woPremierGraph=nSamples-5
     #nbGraph=(nSamples_woPremierGraph %/% 4)+2
@@ -687,37 +680,39 @@ plot_after_quantile<-function(fileWithPaths, output_folder, genesNotMoving, step
       bw_current=c()
       if (i==1){
         #The five first samples
-        bw_current=paths[[1]][((i-1)*5+2):(i*5)]
+        bw_current=path_to_bw[((i-1)*5+2):(i*5)]
         ref="popo"
       }else{
         #The four next samples + the reference one (i e the first)
-        bw_current=paths[[1]][(((i-1)*4)+2):((i*4)+1)]
+        bw_current=path_to_bw[(((i-1)*4)+2):((i*4)+1)]
         ref="keke"
       }
-      legend=c()
+      mylegend=c()
       if (i==1){
         #Define the reference
-        bw_ref=paths[[1]][1]
-        sample_nametmp1_ref=strsplit(as.character(unlist(bw_ref)), "/")
-        sample_nametmp2_ref=sample_nametmp1_ref[[1]][length(sample_nametmp1_ref[[1]])]
+        bw_ref=path_to_bw[1]
+        sample_nametmp1_ref=strsplit(as.character(unlist(bw_ref)), "/")[[1]]
+        sample_nametmp2_ref=sample_nametmp1_ref[length(sample_nametmp1_ref)]
         sample_name_ref_tmp=strsplit(sample_nametmp2_ref, ".bw")[[1]]
         sample_name_ref_tpm=strsplit(sample_name_ref_tmp, "_")[[1]][2]
+        if(is.na(sample_name_ref_tpm)){sample_name_ref_tpm=sample_name_ref_tmp}
         #sample_name_ref=paste(sample_name_ref_tpm[1], sample_name_ref_tpm[2], sep="_")
-        legend=c(legend, sample_name_ref_tpm)
+        mylegend=c(mylegend, sample_name_ref_tpm)
       }
       for (k in 1:length(bw_current)){
         if (i!= nbGraph){
           if ((i != 1) & (k==1)){
             #The first sample in legend is always the reference
-            legend=c(legend, sample_name_ref_tpm)
+            mylegend=c(mylegend, sample_name_ref_tpm)
           }
-          sample_nametmp1=strsplit(as.character(unlist(bw_current[[k]])), "/")
-          sample_nametmp2=sample_nametmp1[[1]][length(sample_nametmp1[[1]])]
+          sample_nametmp1=strsplit(bw_current[k], "/")[[1]]
+          sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
 
           sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
 
           sample_name_final=strsplit(sample_name, "_")[[1]][2]
-          legend=c(legend, sample_name_final)
+          if (is.na(sample_name_final)){sample_name_final=sample_name}
+          mylegend=c(mylegend, sample_name_final)
           #sample_name_final=paste(sample_name_tmp[1], sample_name_tmp[2], sep="_")
 
           # if (k!=5 | i==1){
@@ -748,8 +743,8 @@ plot_after_quantile<-function(fileWithPaths, output_folder, genesNotMoving, step
         # bw5=getDatabw_woRemoveNoise(as.character(unlist(bw_current[5])))
       }
 
-      p=plot_before_afternorm_several(bw1, bw2, bw3, bw4, bw5, NotMoving, legend, seq(-4000, 4000, by=step), "After normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "lightsalmon2"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
-      DF_after=list.append(fill_statsAfter(bw1, bw2, bw3, bw4, bw5, NotMoving, legend, seq(-4000, 4000, by=step), "After normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "lightsalmon2"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after, ref))
+      p=plot_before_afternorm_several(bw1, bw2, bw3, bw4, bw5, NotMoving, mylegend, seq(-4000, 4000, by=step), "After normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "lightsalmon2"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
+      DF_after=list.append(fill_statsAfter(bw1, bw2, bw3, bw4, bw5, NotMoving, mylegend, seq(-4000, 4000, by=step), "After normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "lightsalmon2"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after, ref))
       plist=list.append(plist, p)
     }
 
@@ -761,50 +756,52 @@ plot_after_quantile<-function(fileWithPaths, output_folder, genesNotMoving, step
     nPlotted=length(DF_after)
     while (nResteToPlot>0){
       listToPlot=c()
-      legend=c()
+      mylegend=c()
       if ((nResteToPlot-4)<=0){
         listToPlot=c(listToPlot, getDatabw_woRemoveNoise(as.character(unlist(bw_ref))))
-        legend=c(legend, sample_name_ref_tpm)
+        mylegend=c(mylegend, sample_name_ref_tpm)
         for (j in 1:nResteToPlot){
-          listToPlot=c(listToPlot, getDatabw_woRemoveNoise(as.character(unlist(paths[[1]][(nPlotted+j)]))))
+          listToPlot=c(listToPlot, getDatabw_woRemoveNoise(path_to_bw[(nPlotted+j)]))
 
-          sample_nametmp1=strsplit(as.character(unlist(as.character(unlist(paths[[1]][(nPlotted+j)])))), "/")
-          sample_nametmp2=sample_nametmp1[[1]][length(sample_nametmp1[[1]])]
+          sample_nametmp1=strsplit(path_to_bw[(nPlotted+j)], "/")[[1]]
+          sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
 
           sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
           sample_name_final=strsplit(sample_name, "_")[[1]][2]
-          legend=c(legend, sample_name_final)
-          print(legend)
+          if(is.na(sample_name_final)){sample_name_final=sample_name}
+          
+          mylegend=c(mylegend, sample_name_final)
+          print(mylegend)
         }
-        #listToPlot=c(listToPlot, getDatabw_woRemoveNoise(as.character(unlist(paths[[1]][(nPlotted+1):nSamples]))))
       }else if (nResteToPlot-4>0){
         listToPlot=c(listToPlot, getDatabw_woRemoveNoise(as.character(unlist(bw_ref))))
-        legend=c(legend, sample_name_ref_tpm)
+        mylegend=c(mylegend, sample_name_ref_tpm)
         for (j in 1:nResteToPlot){
-          listToPlot=c(listToPlot, getDatabw_woRemoveNoise(as.character(unlist(paths[[1]][(nPlotted+j)]))))
+          listToPlot=c(listToPlot, getDatabw_woRemoveNoise(path_to_bw[(nPlotted+j)]))
 
-          sample_nametmp1=strsplit(as.character(unlist(as.character(unlist(paths[[1]][(nPlotted+j)])))), "/")
-          sample_nametmp2=sample_nametmp1[[1]][length(sample_nametmp1[[1]])]
+          sample_nametmp1=strsplit(path_to_bw[(nPlotted+j)], "/")[[1]]
+          sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
 
           sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
           sample_name_final=strsplit(sample_name, "_")[[1]][2]
+          if(is.na(sample_name_final)){sample_name_final=sample_name}
           #sample_name_final=paste(sample_name_tmp[1], sample_name_tmp[2], sep="_")
-          legend=c(legend, sample_name_final)
+          mylegend=c(mylegend, sample_name_final)
         }
       }
 
       if (length(listToPlot)==2){
-        p=plot_before_afternorm_2profiles(listToPlot[[1]], listToPlot[[2]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
-        DF_after=list.append(fill_statsAfter_1profiles(listToPlot[[2]], NotMoving, legend[2], seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after))
+        p=plot_before_afternorm_2profiles(listToPlot[[1]], listToPlot[[2]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
+        DF_after=list.append(fill_statsAfter_1profiles(listToPlot[[2]], NotMoving, mylegend[2], seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after))
       }else if(length(listToPlot)==3){
-        p=plot_before_afternorm_3profiles(listToPlot[[1]], listToPlot[[2]], listToPlot[[3]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
-        DF_after=list.append(fill_statsAfter_2profiles(listToPlot[[2]], listToPlot[[3]], NotMoving, legend[2:length(legend)], seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after))
+        p=plot_before_afternorm_3profiles(listToPlot[[1]], listToPlot[[2]], listToPlot[[3]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
+        DF_after=list.append(fill_statsAfter_2profiles(listToPlot[[2]], listToPlot[[3]], NotMoving, mylegend[2:length(mylegend)], seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after))
       }else if(length(listToPlot)==4){
-        p=plot_before_afternorm_4profiles(listToPlot[[1]], listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
-        DF_after=list.append(fill_statsAfter_3profiles(listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], NotMoving, legend[2:length(legend)], seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after))
+        p=plot_before_afternorm_4profiles(listToPlot[[1]], listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
+        DF_after=list.append(fill_statsAfter_3profiles(listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], NotMoving, mylegend[2:length(mylegend)], seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after))
       }else if(length(listToPlot)==5){
-        p=plot_before_afternorm_5profiles(listToPlot[[1]], listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], listToPlot[[5]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
-        DF_after=list.append(fill_statsAfter_4profiles(listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], listToPlot[[5]][2:length(legend)], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after))
+        p=plot_before_afternorm_5profiles(listToPlot[[1]], listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], listToPlot[[5]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
+        DF_after=list.append(fill_statsAfter_4profiles(listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], listToPlot[[5]][2:length(mylegend)], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after))
       }
       plist=list.append(plist, p)
       nPlotted=nPlotted+4
@@ -817,39 +814,41 @@ plot_after_quantile<-function(fileWithPaths, output_folder, genesNotMoving, step
     #ggsave(paste(output_folder, "Before_Normalisation.pdf", sep=""), gridExtra::marrangeGrob(grobs = plist, nrow=2, ncol=2))
   }else if (nbGraph==1){
     ref="popo"
-    legend=c()
-    bw_current=paths[[1]][1:nSamples]
+    mylegend=c()
+    bw_current=path_to_bw[1:nSamples]
     list_bw_open=list()
     for (k in 1:nSamples){
-      list_bw_open=list.append(list_bw_open, getDatabw_woRemoveNoise(as.character(unlist(bw_current[k]))))
-      sample_nametmp1=strsplit(as.character(unlist(bw_current[[k]])), "/")
-      sample_nametmp2=sample_nametmp1[[1]][length(sample_nametmp1[[1]])]
+      list_bw_open=list.append(list_bw_open, getDatabw_woRemoveNoise(bw_current[k]))
+      sample_nametmp1=strsplit(bw_current[k], "/")[[1]]
+      sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
       sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
       sample_name_final=strsplit(sample_name, "_")[[1]][2]
+      if(is.na(sample_name_final)){sample_name_final=sample_name}
+      
       #sample_name_final=paste(sample_name_tmp[1], sample_name_tmp[2], sep="_")
-      legend=c(legend, sample_name_final)
+      mylegend=c(mylegend, sample_name_final)
     }
     #Given the number of samples to plot we choose the appropriate function
     if (nSamples==2){
       pdf(paste(output_folder, "After_Normalisation.pdf", sep=""), width=5, height=5)
-      plot_before_afternorm_2profiles(list_bw_open[[1]], list_bw_open[[2]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
+      plot_before_afternorm_2profiles(list_bw_open[[1]], list_bw_open[[2]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
       dev.off()
-      DF_after=fill_statsAfter_2profiles(list_bw_open[[1]], list_bw_open[[2]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after)
+      DF_after=fill_statsAfter_2profiles(list_bw_open[[1]], list_bw_open[[2]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after)
     }else if(nSamples==3){
       pdf(paste(output_folder, "After_Normalisation.pdf", sep=""), width=5, height=5)
-      plot_before_afternorm_3profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
+      plot_before_afternorm_3profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
       dev.off()
-      DF_after=fill_statsAfter_3profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after)
+      DF_after=fill_statsAfter_3profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after)
     }else if(nSamples==4){
       pdf(paste(output_folder, "After_Normalisation.pdf", sep=""), width=5, height=5)
-      plot_before_afternorm_4profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
+      plot_before_afternorm_4profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
       dev.off()
-      DF_after=fill_statsAfter_4profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after)
+      DF_after=fill_statsAfter_4profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after)
     }else if(nSamples==5){
       pdf(paste(output_folder, "After_Normalisation.pdf", sep=""), width=5, height=5)
-      plot_before_afternorm_5profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]],  list_bw_open[[5]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "mediumvioletred"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
+      plot_before_afternorm_5profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]],  list_bw_open[[5]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "mediumvioletred"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
       dev.off()
-      DF_after=fill_statsAfter_5profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]], list_bw_open[[5]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "mediumvioletred"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after)
+      DF_after=fill_statsAfter_5profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]], list_bw_open[[5]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "mediumvioletred"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after)
     }
 
   }
@@ -857,18 +856,17 @@ plot_after_quantile<-function(fileWithPaths, output_folder, genesNotMoving, step
 }
 
 #OK
-plot_after_linear<-function(fileWithPaths, output_folder, genesNotMoving, step, DF_after, histoneMark){
-  NotMoving=read.table(genesNotMoving, header=F)
+plot_after_linear<-function(path_to_bw, output_folder, path_to_file_with_constant_genes, step, DF_after, histone_mark){
+  NotMoving=read.table(path_to_file_with_constant_genes, header=F)
   colnames(NotMoving)=c("chrom", "start", "stop", "geneName", "score", "strand")
   peakmax=c()
   for (k in 1:nrow(NotMoving)){
     peakmax=c(peakmax, NotMoving[k,]$start)
   }
   NotMoving$peakmax=peakmax
-  paths=read.table(fileWithPaths, header=FALSE)
 
   #Define the number of plots: There will be 5 samples per plot including one "reference" sample which will be present on each plot
-  nSamples=nrow(paths)
+  nSamples=length(path_to_bw)
   if (nSamples!=5){
     #nSamples_woPremierGraph=nSamples-5
     #nbGraph=(nSamples_woPremierGraph %/% 4)+2
@@ -882,185 +880,183 @@ plot_after_linear<-function(fileWithPaths, output_folder, genesNotMoving, step, 
       bw_current=c()
       if (i==1){
         #The five first samples
-        bw_current=paths[[1]][((i-1)*5+2):(i*5)]
+        bw_current=path_to_bw[((i-1)*5+2):(i*5)]
         ref="popo"
       }else{
         #The four next samples + the reference one (i e the first)
-        bw_current=paths[[1]][(((i-1)*4)+2):((i*4)+1)]
+        bw_current=path_to_bw[(((i-1)*4)+2):((i*4)+1)]
         ref="keke"
       }
-      legend=c()
+      mylegend=c()
       if (i==1){
         #Define the reference
-        bw_ref=paths[[1]][1]
-        sample_nametmp1_ref=strsplit(as.character(unlist(bw_ref)), "/")
-        sample_nametmp2_ref=sample_nametmp1_ref[[1]][length(sample_nametmp1_ref[[1]])]
+        bw_ref=path_to_bw[1]
+        sample_nametmp1_ref=strsplit(bw_ref, "/")[[1]]
+        sample_nametmp2_ref=sample_nametmp1_ref[length(sample_nametmp1_ref)]
         sample_name_ref_tmp=strsplit(sample_nametmp2_ref, ".bw")[[1]]
-        sample_name_ref=sample_name_ref_tmp
+        sample_name_ref=sample_name_ref_tmp ###NOT CONSISTANT WITH _ splits..
         #sample_name_ref_tpm=strsplit(sample_name_ref_tmp, "_")[[1]][2]
         #sample_name_ref=paste(sample_name_ref_tpm[1], sample_name_ref_tpm[2], sep="_")
-        legend=c(legend, sample_name_ref_tmp)
+        mylegend=c(mylegend, sample_name_ref_tmp)
       }
       for (k in 1:length(bw_current)){
         if (i!= nbGraph){
           if ((i != 1) & (k==1)){
             #The first sample in legend is always the reference
-            legend=c(legend, sample_name_ref)
+            mylegend=c(mylegend, sample_name_ref)
           }
-          sample_nametmp1=strsplit(as.character(unlist(bw_current[[k]])), "/")
-          sample_nametmp2=sample_nametmp1[[1]][length(sample_nametmp1[[1]])]
-
+          sample_nametmp1=strsplit(bw_current[k], "/")[[1]]
+          sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
+          
           sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
-          legend=c(legend, sample_name)
+          mylegend=c(mylegend, sample_name)
           #sample_name_final=strsplit(sample_name, "_")[[1]][2]
           #sample_name_final=paste(sample_name_tmp[1], sample_name_tmp[2], sep="_")
-
+          
           # if (k!=5 | i==1){
           #   legend=c(legend, sample_name)
           # }
         }
-
+        
       }
       #Open bw
       if (i != 1){
         ref="keke"
-        bw1=getDatabw_woRemoveNoise(as.character(unlist(bw_ref)))
-        bw2=getDatabw_woRemoveNoise(as.character(unlist(bw_current[1])))
-        bw3=getDatabw_woRemoveNoise(as.character(unlist(bw_current[2])))
-        bw4=getDatabw_woRemoveNoise(as.character(unlist(bw_current[3])))
-        bw5=getDatabw_woRemoveNoise(as.character(unlist(bw_current[4])))
+        bw1=getDatabw_woRemoveNoise(bw_ref)
+        bw2=getDatabw_woRemoveNoise(bw_current[1])
+        bw3=getDatabw_woRemoveNoise(bw_current[2])
+        bw4=getDatabw_woRemoveNoise(bw_current[3])
+        bw5=getDatabw_woRemoveNoise(bw_current[4])
       }else{
         ref="popo"
-        bw1=getDatabw_woRemoveNoise(as.character(unlist(bw_ref)))
-        bw2=getDatabw_woRemoveNoise(as.character(unlist(bw_current[1])))
-        bw3=getDatabw_woRemoveNoise(as.character(unlist(bw_current[2])))
-        bw4=getDatabw_woRemoveNoise(as.character(unlist(bw_current[3])))
-        bw5=getDatabw_woRemoveNoise(as.character(unlist(bw_current[4])))
+        bw1=getDatabw_woRemoveNoise(bw_ref)
+        bw2=getDatabw_woRemoveNoise(bw_current[1])
+        bw3=getDatabw_woRemoveNoise(bw_current[2])
+        bw4=getDatabw_woRemoveNoise(bw_current[3])
+        bw5=getDatabw_woRemoveNoise(bw_current[4])
         # bw1=getDatabw_woRemoveNoise(as.character(unlist(bw_current[1])))
         # bw2=getDatabw_woRemoveNoise(as.character(unlist(bw_current[2])))
         # bw3=getDatabw_woRemoveNoise(as.character(unlist(bw_current[3])))
         # bw4=getDatabw_woRemoveNoise(as.character(unlist(bw_current[4])))
         # bw5=getDatabw_woRemoveNoise(as.character(unlist(bw_current[5])))
       }
-
-      p=plot_before_afternorm_several(bw1, bw2, bw3, bw4, bw5, NotMoving, legend, seq(-4000, 4000, by=step), "After normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "lightsalmon2"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
-      DF_after=list.append(fill_statsAfter(bw1, bw2, bw3, bw4, bw5, NotMoving, legend, seq(-4000, 4000, by=step), "After normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "lightsalmon2"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after, ref))
+      
+      p=plot_before_afternorm_several(bw1, bw2, bw3, bw4, bw5, NotMoving, mylegend, seq(-4000, 4000, by=step), "After normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "lightsalmon2"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
+      DF_after=list.append(fill_statsAfter(bw1, bw2, bw3, bw4, bw5, NotMoving, mylegend, seq(-4000, 4000, by=step), "After normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "lightsalmon2"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after, ref))
       plist=list.append(plist, p)
     }
-
+    
     #Samples that left: those that were not multiple of 5
     ref="keke"
-
+    
     nResteToPlot=nSamples-(4*(nbGraph-1))-1
     #nPlotted=5+(nbGraph-1)*4
     nPlotted=length(DF_after)
     while (nResteToPlot>0){
       listToPlot=c()
-      legend=c()
+      mylegend=c()
       if ((nResteToPlot-4)<=0){
-        listToPlot=c(listToPlot, getDatabw_woRemoveNoise(as.character(unlist(bw_ref))))
-        legend=c(legend, sample_name_ref)
+        listToPlot=c(listToPlot, getDatabw_woRemoveNoise(bw_ref))
+        mylegend=c(mylegend, sample_name_ref)
         for (j in 1:nResteToPlot){
-          listToPlot=c(listToPlot, getDatabw_woRemoveNoise(as.character(unlist(paths[[1]][(nPlotted+j)]))))
-
-          sample_nametmp1=strsplit(as.character(unlist(as.character(unlist(paths[[1]][(nPlotted+j)])))), "/")
-          sample_nametmp2=sample_nametmp1[[1]][length(sample_nametmp1[[1]])]
-
+          listToPlot=c(listToPlot, getDatabw_woRemoveNoise(path_to_bw[(nPlotted+j)]))
+          
+          sample_nametmp1=strsplit(path_to_bw[(nPlotted+j)], "/")[[1]]
+          sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
+          
           sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
-          legend=c(legend, sample_name)
-          print(legend)
+          mylegend=c(mylegend, sample_name)
+          print(mylegend)
         }
-        #listToPlot=c(listToPlot, getDatabw_woRemoveNoise(as.character(unlist(paths[[1]][(nPlotted+1):nSamples]))))
       }else if (nResteToPlot-4>0){
-        listToPlot=c(listToPlot, getDatabw_woRemoveNoise(as.character(unlist(bw_ref))))
-        legend=c(legend, sample_name_ref)
+        listToPlot=c(listToPlot, getDatabw_woRemoveNoise(bw_ref))
+        mylegend=c(mylegend, sample_name_ref)
         for (j in 1:nResteToPlot){
-          listToPlot=c(listToPlot, getDatabw_woRemoveNoise(as.character(unlist(paths[[1]][(nPlotted+j)]))))
-
-          sample_nametmp1=strsplit(as.character(unlist(as.character(unlist(paths[[1]][(nPlotted+j)])))), "/")
-          sample_nametmp2=sample_nametmp1[[1]][length(sample_nametmp1[[1]])]
-
+          listToPlot=c(listToPlot, getDatabw_woRemoveNoise(path_to_bw[(nPlotted+j)]))
+          
+          sample_nametmp1=strsplit(path_to_bw[(nPlotted+j)], "/")[[1]]
+          sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
+          
           sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
-          legend=c(legend, sample_name)
+          mylegend=c(mylegend, sample_name)
         }
       }
-
+      
       if (length(listToPlot)==2){
-        p=plot_before_afternorm_2profiles(listToPlot[[1]], listToPlot[[2]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
-        DF_after=list.append(fill_statsAfter_1profiles(listToPlot[[2]], NotMoving, legend[2], seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after))
+        p=plot_before_afternorm_2profiles(listToPlot[[1]], listToPlot[[2]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
+        DF_after=list.append(fill_statsAfter_1profiles(listToPlot[[2]], NotMoving, mylegend[2], seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after))
       }else if(length(listToPlot)==3){
-        p=plot_before_afternorm_3profiles(listToPlot[[1]], listToPlot[[2]], listToPlot[[3]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
-        DF_after=list.append(fill_statsAfter_2profiles(listToPlot[[2]], listToPlot[[3]], NotMoving, legend[2:length(legend)], seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after))
+        p=plot_before_afternorm_3profiles(listToPlot[[1]], listToPlot[[2]], listToPlot[[3]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
+        DF_after=list.append(fill_statsAfter_2profiles(listToPlot[[2]], listToPlot[[3]], NotMoving, mylegend[2:length(mylegend)], seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after))
       }else if(length(listToPlot)==4){
-        p=plot_before_afternorm_4profiles(listToPlot[[1]], listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
-        DF_after=list.append(fill_statsAfter_3profiles(listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], NotMoving, legend[2:length(legend)], seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after))
+        p=plot_before_afternorm_4profiles(listToPlot[[1]], listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
+        DF_after=list.append(fill_statsAfter_3profiles(listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], NotMoving, mylegend[2:length(mylegend)], seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after))
       }else if(length(listToPlot)==5){
-        p=plot_before_afternorm_5profiles(listToPlot[[1]], listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], listToPlot[[5]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
-        DF_after=list.append(fill_statsAfter_4profiles(listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], listToPlot[[5]][2:length(legend)], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after))
+        p=plot_before_afternorm_5profiles(listToPlot[[1]], listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], listToPlot[[5]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
+        DF_after=list.append(fill_statsAfter_4profiles(listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], listToPlot[[5]][2:length(mylegend)], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after))
       }
       plist=list.append(plist, p)
       nPlotted=nPlotted+4
       nResteToPlot=nResteToPlot-4
     }
-
+    
     main=marrangeGrob(grobs=plist,ncol=2, nrow=2)
     ggsave(paste(output_folder, "After_Normalisation.pdf", sep=""), main, width=10, height=10)
-
+    
     #ggsave(paste(output_folder, "Before_Normalisation.pdf", sep=""), gridExtra::marrangeGrob(grobs = plist, nrow=2, ncol=2))
   }else if (nbGraph==1){
     ref="popo"
-    legend=c()
-    bw_current=paths[[1]][1:nSamples]
+    mylegend=c()
+    bw_current=path_to_bw[1:nSamples]
     list_bw_open=list()
     for (k in 1:nSamples){
-      list_bw_open=list.append(list_bw_open, getDatabw_woRemoveNoise(as.character(unlist(bw_current[k]))))
-      sample_nametmp1=strsplit(as.character(unlist(bw_current[[k]])), "/")
-      sample_nametmp2=sample_nametmp1[[1]][length(sample_nametmp1[[1]])]
+      list_bw_open=list.append(list_bw_open, getDatabw_woRemoveNoise(bw_current[k]))
+      sample_nametmp1=strsplit(bw_current[k], "/")[[1]]
+      sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
       sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
       #sample_name_final=strsplit(sample_name, "_")[[1]][2]
       #sample_name_final=paste(sample_name_tmp[1], sample_name_tmp[2], sep="_")
-      legend=c(legend, sample_name)
+      mylegend=c(mylegend, sample_name)
     }
     #Given the number of samples to plot we choose the appropriate function
     if (nSamples==2){
       pdf(paste(output_folder, "After_Normalisation.pdf", sep=""), width=5, height=5)
-      plot_before_afternorm_2profiles(list_bw_open[[1]], list_bw_open[[2]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
+      plot_before_afternorm_2profiles(list_bw_open[[1]], list_bw_open[[2]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
       dev.off()
-      DF_after=fill_statsAfter_2profiles(list_bw_open[[1]], list_bw_open[[2]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after)
+      DF_after=fill_statsAfter_2profiles(list_bw_open[[1]], list_bw_open[[2]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after)
     }else if(nSamples==3){
       pdf(paste(output_folder, "After_Normalisation.pdf", sep=""), width=5, height=5)
-      plot_before_afternorm_3profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
+      plot_before_afternorm_3profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
       dev.off()
-      DF_after=fill_statsAfter_3profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after)
+      DF_after=fill_statsAfter_3profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after)
     }else if(nSamples==4){
       pdf(paste(output_folder, "After_Normalisation.pdf", sep=""), width=5, height=5)
-      plot_before_afternorm_4profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
+      plot_before_afternorm_4profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
       dev.off()
-      DF_after=fill_statsAfter_4profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after)
+      DF_after=fill_statsAfter_4profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after)
     }else if(nSamples==5){
       pdf(paste(output_folder, "After_Normalisation.pdf", sep=""), width=5, height=5)
-      plot_before_afternorm_5profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]],  list_bw_open[[5]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "mediumvioletred"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
+      plot_before_afternorm_5profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]],  list_bw_open[[5]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "mediumvioletred"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
       dev.off()
-      DF_after=fill_statsAfter_5profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]], list_bw_open[[5]], NotMoving, legend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "mediumvioletred"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after)
+      DF_after=fill_statsAfter_5profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]], list_bw_open[[5]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "mediumvioletred"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after)
     }
-
+    
   }
   return(DF_after)
 }
 
 #OK also works for before linear
-plot_before_quantile<-function(fileWithPaths, output_folder, genesNotMoving, step, DF_after, histoneMark){
-  NotMoving=read.table(genesNotMoving, header=F)
+plot_before_quantile<-function(path_to_bw, output_folder, path_to_file_with_constant_genes, step, DF_after, histone_mark){
+  NotMoving=read.table(path_to_file_with_constant_genes, header=F)
   colnames(NotMoving)=c("chrom", "start", "stop", "geneName", "score", "strand")
   peakmax=c()
   for (k in 1:nrow(NotMoving)){
     peakmax=c(peakmax, NotMoving[k,]$start)
   }
   NotMoving$peakmax=peakmax
-  paths=read.table(fileWithPaths, header=FALSE)
 
   #Define the number of plots: There will be 5 samples per plot including one "reference" sample which will be present on each plot
-  nSamples=nrow(paths)
+  nSamples=length(path_to_bw)
   if (nSamples!=5){
     #nSamples_woPremierGraph=nSamples-5
     #nbGraph=(nSamples_woPremierGraph %/% 4)+2
@@ -1074,36 +1070,36 @@ plot_before_quantile<-function(fileWithPaths, output_folder, genesNotMoving, ste
       bw_current=c()
       if (i==1){
         #The five first samples
-        bw_current=paths[[1]][((i-1)*5+2):(i*5)]
+        bw_current=path_to_bw[((i-1)*5+2):(i*5)]
         ref="popo"
       }else{
         #The four next samples + the reference one (i e the first)
-        bw_current=paths[[1]][(((i-1)*4)+2):((i*4)+1)]
+        bw_current=path_to_bw[(((i-1)*4)+2):((i*4)+1)]
         ref="keke"
       }
-      legend=c()
+      mylegend=c()
       if (i==1){
         #Define the reference
-        bw_ref=paths[[1]][1]
-        sample_nametmp1_ref=strsplit(as.character(unlist(bw_ref)), "/")
-        sample_nametmp2_ref=sample_nametmp1_ref[[1]][length(sample_nametmp1_ref[[1]])]
+        bw_ref=path_to_bw[1]
+        sample_nametmp1_ref=strsplit(bw_ref, "/")[[1]]
+        sample_nametmp2_ref=sample_nametmp1_ref[length(sample_nametmp1_ref)]
         sample_name_ref_tmp=strsplit(sample_nametmp2_ref, ".bw")[[1]]
         sample_name_ref=sample_name_ref_tmp
         #sample_name_ref_tpm=strsplit(sample_name_ref_tmp, "_")[[1]][2]
         #sample_name_ref=paste(sample_name_ref_tpm[1], sample_name_ref_tpm[2], sep="_")
-        legend=c(legend, sample_name_ref_tmp)
+        mylegend=c(mylegend, sample_name_ref_tmp)
       }
       for (k in 1:length(bw_current)){
         if (i!= nbGraph){
           if ((i != 1) & (k==1)){
             #The first sample in legend is always the reference
-            legend=c(legend, sample_name_ref)
+            mylegend=c(mylegend, sample_name_ref)
           }
-          sample_nametmp1=strsplit(as.character(unlist(bw_current[[k]])), "/")
-          sample_nametmp2=sample_nametmp1[[1]][length(sample_nametmp1[[1]])]
+          sample_nametmp1=strsplit(bw_current[[k]], "/")[[1]]
+          sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
 
           sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
-          legend=c(legend, sample_name)
+          mylegend=c(mylegend, sample_name)
           #sample_name_final=strsplit(sample_name, "_")[[1]][2]
           #sample_name_final=paste(sample_name_tmp[1], sample_name_tmp[2], sep="_")
 
@@ -1135,8 +1131,8 @@ plot_before_quantile<-function(fileWithPaths, output_folder, genesNotMoving, ste
         # bw5=getDatabw_woRemoveNoise(as.character(unlist(bw_current[5])))
       }
 
-      p=plot_before_afternorm_several(bw1, bw2, bw3, bw4, bw5, NotMoving, legend, seq(-4000, 4000, by=step), "Before normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "lightsalmon2"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
-      DF_after=list.append(fill_statsAfter(bw1, bw2, bw3, bw4, bw5, NotMoving, legend, seq(-4000, 4000, by=step), "Before normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "lightsalmon2"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after, ref))
+      p=plot_before_afternorm_several(bw1, bw2, bw3, bw4, bw5, NotMoving, mylegend, seq(-4000, 4000, by=step), "Before normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "lightsalmon2"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
+      DF_after=list.append(fill_statsAfter(bw1, bw2, bw3, bw4, bw5, NotMoving, mylegend, seq(-4000, 4000, by=step), "Before normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "lightsalmon2"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after, ref))
       plist=list.append(plist, p)
     }
 
@@ -1148,47 +1144,46 @@ plot_before_quantile<-function(fileWithPaths, output_folder, genesNotMoving, ste
     nPlotted=length(DF_after)
     while (nResteToPlot>0){
       listToPlot=c()
-      legend=c()
+      mylegend=c()
       if ((nResteToPlot-4)<=0){
-        listToPlot=c(listToPlot, getDatabw_woRemoveNoise(as.character(unlist(bw_ref))))
-        legend=c(legend, sample_name_ref)
+        listToPlot=c(listToPlot, getDatabw_woRemoveNoise(bw_ref))
+        mylegend=c(mylegend, sample_name_ref)
         for (j in 1:nResteToPlot){
-          listToPlot=c(listToPlot, getDatabw_woRemoveNoise(as.character(unlist(paths[[1]][(nPlotted+j)]))))
+          listToPlot=c(listToPlot, getDatabw_woRemoveNoise(path_to_bw[(nPlotted+j)]))
 
-          sample_nametmp1=strsplit(as.character(unlist(as.character(unlist(paths[[1]][(nPlotted+j)])))), "/")
-          sample_nametmp2=sample_nametmp1[[1]][length(sample_nametmp1[[1]])]
+          sample_nametmp1=strsplit(path_to_bw[(nPlotted+j)], "/")[[1]]
+          sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
 
           sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
-          legend=c(legend, sample_name)
-          print(legend)
+          mylegend=c(mylegend, sample_name)
+          print(mylegend)
         }
-        #listToPlot=c(listToPlot, getDatabw_woRemoveNoise(as.character(unlist(paths[[1]][(nPlotted+1):nSamples]))))
       }else if (nResteToPlot-4>0){
         listToPlot=c(listToPlot, getDatabw_woRemoveNoise(as.character(unlist(bw_ref))))
-        legend=c(legend, sample_name_ref)
+        mylegend=c(mylegend, sample_name_ref)
         for (j in 1:nResteToPlot){
-          listToPlot=c(listToPlot, getDatabw_woRemoveNoise(as.character(unlist(paths[[1]][(nPlotted+j)]))))
+          listToPlot=c(listToPlot, getDatabw_woRemoveNoise(path_to_bw[(nPlotted+j)]))
 
-          sample_nametmp1=strsplit(as.character(unlist(as.character(unlist(paths[[1]][(nPlotted+j)])))), "/")
-          sample_nametmp2=sample_nametmp1[[1]][length(sample_nametmp1[[1]])]
+          sample_nametmp1=strsplit(path_to_bw[(nPlotted+j)], "/")[[1]]
+          sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
 
           sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
-          legend=c(legend, sample_name)
+          mylegend=c(mylegend, sample_name)
         }
       }
 
       if (length(listToPlot)==2){
-        p=plot_before_afternorm_2profiles(listToPlot[[1]], listToPlot[[2]], NotMoving, legend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
-        DF_after=list.append(fill_statsAfter_1profiles(listToPlot[[2]], NotMoving, legend[2], seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after))
+        p=plot_before_afternorm_2profiles(listToPlot[[1]], listToPlot[[2]], NotMoving, mylegend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
+        DF_after=list.append(fill_statsAfter_1profiles(listToPlot[[2]], NotMoving, mylegend[2], seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after))
       }else if(length(listToPlot)==3){
-        p=plot_before_afternorm_3profiles(listToPlot[[1]], listToPlot[[2]], listToPlot[[3]], NotMoving, legend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
-        DF_after=list.append(fill_statsAfter_2profiles(listToPlot[[2]], listToPlot[[3]], NotMoving, legend[2:length(legend)], seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after))
+        p=plot_before_afternorm_3profiles(listToPlot[[1]], listToPlot[[2]], listToPlot[[3]], NotMoving, mylegend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
+        DF_after=list.append(fill_statsAfter_2profiles(listToPlot[[2]], listToPlot[[3]], NotMoving, mylegend[2:length(mylegend)], seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after))
       }else if(length(listToPlot)==4){
-        p=plot_before_afternorm_4profiles(listToPlot[[1]], listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], NotMoving, legend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
-        DF_after=list.append(fill_statsAfter_3profiles(listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], NotMoving, legend[2:length(legend)], seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after))
+        p=plot_before_afternorm_4profiles(listToPlot[[1]], listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], NotMoving, mylegend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
+        DF_after=list.append(fill_statsAfter_3profiles(listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], NotMoving, mylegend[2:length(mylegend)], seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after))
       }else if(length(listToPlot)==5){
-        p=plot_before_afternorm_5profiles(listToPlot[[1]], listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], listToPlot[[5]], NotMoving, legend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
-        DF_after=list.append(fill_statsAfter_4profiles(listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], listToPlot[[5]][2:length(legend)], NotMoving, legend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after))
+        p=plot_before_afternorm_5profiles(listToPlot[[1]], listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], listToPlot[[5]], NotMoving, mylegend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
+        DF_after=list.append(fill_statsAfter_4profiles(listToPlot[[2]], listToPlot[[3]], listToPlot[[4]], listToPlot[[5]][2:length(mylegend)], NotMoving, mylegend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after))
       }
       plist=list.append(plist, p)
       nPlotted=nPlotted+4
@@ -1201,39 +1196,39 @@ plot_before_quantile<-function(fileWithPaths, output_folder, genesNotMoving, ste
     #ggsave(paste(output_folder, "Before_Normalisation.pdf", sep=""), gridExtra::marrangeGrob(grobs = plist, nrow=2, ncol=2))
   }else if (nbGraph==1){
     ref="popo"
-    legend=c()
-    bw_current=paths[[1]][1:nSamples]
+    mylegend=c()
+    bw_current=path_to_bw[1:nSamples]
     list_bw_open=list()
     for (k in 1:nSamples){
       list_bw_open=list.append(list_bw_open, getDatabw_woRemoveNoise(as.character(unlist(bw_current[k]))))
-      sample_nametmp1=strsplit(as.character(unlist(bw_current[[k]])), "/")
-      sample_nametmp2=sample_nametmp1[[1]][length(sample_nametmp1[[1]])]
+      sample_nametmp1=strsplit(bw_current[k], "/")[[1]]
+      sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
       sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
       #sample_name_final=strsplit(sample_name, "_")[[1]][2]
       #sample_name_final=paste(sample_name_tmp[1], sample_name_tmp[2], sep="_")
-      legend=c(legend, sample_name)
+      mylegend=c(mylegend, sample_name)
     }
     #Given the number of samples to plot we choose the appropriate function
     if (nSamples==2){
       pdf(paste(output_folder, "Before_Normalisation.pdf", sep=""), width=5, height=5)
-      plot_before_afternorm_2profiles(list_bw_open[[1]], list_bw_open[[2]], NotMoving, legend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
+      plot_before_afternorm_2profiles(list_bw_open[[1]], list_bw_open[[2]], NotMoving, mylegend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
       dev.off()
-      DF_after=fill_statsAfter_2profiles(list_bw_open[[1]], list_bw_open[[2]], NotMoving, legend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after)
+      DF_after=fill_statsAfter_2profiles(list_bw_open[[1]], list_bw_open[[2]], NotMoving, mylegend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after)
     }else if(nSamples==3){
       pdf(paste(output_folder, "Before_Normalisation.pdf", sep=""), width=5, height=5)
-      plot_before_afternorm_3profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], NotMoving, legend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
+      plot_before_afternorm_3profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], NotMoving, mylegend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
       dev.off()
-      DF_after=fill_statsAfter_3profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], NotMoving, legend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after)
+      DF_after=fill_statsAfter_3profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], NotMoving, mylegend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after)
     }else if(nSamples==4){
       pdf(paste(output_folder, "Before_Normalisation.pdf", sep=""), width=5, height=5)
-      plot_before_afternorm_4profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]], NotMoving, legend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
+      plot_before_afternorm_4profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]], NotMoving, mylegend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
       dev.off()
-      DF_after=fill_statsAfter_4profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]], NotMoving, legend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after)
+      DF_after=fill_statsAfter_4profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]], NotMoving, mylegend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after)
     }else if(nSamples==5){
       pdf(paste(output_folder, "Before_Normalisation.pdf", sep=""), width=5, height=5)
-      plot_before_afternorm_5profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]],  list_bw_open[[5]], NotMoving, legend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "mediumvioletred"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "))
+      plot_before_afternorm_5profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]],  list_bw_open[[5]], NotMoving, mylegend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "mediumvioletred"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
       dev.off()
-      DF_after=fill_statsAfter_5profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]], list_bw_open[[5]], NotMoving, legend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "mediumvioletred"), "Distance from TSS [bp]", paste("Average density of", histoneMark, sep=" "), DF_after)
+      DF_after=fill_statsAfter_5profiles(list_bw_open[[1]], list_bw_open[[2]], list_bw_open[[3]], list_bw_open[[4]], list_bw_open[[5]], NotMoving, mylegend, seq(-4000, 4000, by=step), "Before Normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "mediumvioletred"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after)
     }
 
   }
@@ -1244,53 +1239,57 @@ plot_before_quantile<-function(fileWithPaths, output_folder, genesNotMoving, ste
 
 
 
-plot_ggplot_4curves <- function(matrixC1, matrixC2, matrixC3, matrixC4, legend, x, title, color, ylab, xlab, xlimite){
+plot_ggplot_4curves <- function(matrixC1, matrixC2, matrixC3, matrixC4, mylegend, x, title, color, ylab, xlab, xlimite){
   G1=data.frame(x, apply(matrixC1, 2, mean), apply(matrixC2, 2, mean), apply(matrixC3, 2, mean), apply(matrixC4, 2, mean))
-  colnames(G1)=c("abscisse", legend)
-  plot_data=gather(G1, condition, valeur, legend, factor_key=TRUE)
+  colnames(G1)=c("abscisse", mylegend)
+  plot_data=gather(G1, condition, valeur, mylegend, factor_key=TRUE)
   return(ggplot(plot_data) + geom_line(data=plot_data, aes(x=abscisse, y=valeur, group=condition, colour=condition )) +
-           geom_ribbon(aes(ymin = plot_data$valeur - std.error(matrixC1), ymax = plot_data$valeur + std.error(matrixC1), x=plot_data$abscisse, fill=condition), alpha = 0.2, stat="identity") + scale_color_manual(values=color) +
+           geom_ribbon(aes(ymin = plot_data$valeur - std.error(matrixC1), ymax = plot_data$valeur + std.error(matrixC1), x=plot_data$abscisse, fill=condition), alpha = 0.2, stat="identity") 
+         + scale_color_manual(values=color) + scale_fill_manual(values=color) +
            labs(x=xlab, y=ylab, title=title) + theme_bw() + ylim(0, xlimite))
 }
 
-plot_ggplot_3curves <- function(matrixC1, matrixC2, matrixC3, legend, x, title, color, ylab, xlab, xlimite){
+plot_ggplot_3curves <- function(matrixC1, matrixC2, matrixC3, mylegend, x, title, color, ylab, xlab, xlimite){
   G1=data.frame(x, apply(matrixC1, 2, mean), apply(matrixC2, 2, mean), apply(matrixC3, 2, mean))
-  colnames(G1)=c("abscisse", legend)
-  plot_data=gather(G1, condition, valeur, legend, factor_key=TRUE)
+  colnames(G1)=c("abscisse", mylegend)
+  plot_data=gather(G1, condition, valeur, mylegend, factor_key=TRUE)
   return(ggplot(plot_data) + geom_line(data=plot_data, aes(x=abscisse, y=valeur, group=condition, colour=condition )) +
-           geom_ribbon(aes(ymin = plot_data$valeur - std.error(matrixC1), ymax = plot_data$valeur + std.error(matrixC1), x=plot_data$abscisse, fill=condition), alpha = 0.2, stat="identity") + scale_color_manual(values=color) +
+           geom_ribbon(aes(ymin = plot_data$valeur - std.error(matrixC1), ymax = plot_data$valeur + std.error(matrixC1), x=plot_data$abscisse, fill=condition), alpha = 0.2, stat="identity") + 
+           scale_color_manual(values=color) +scale_fill_manual(values=color) +
            labs(x=xlab, y=ylab, title=title) + theme_bw() + ylim(0, xlimite))
 }
 
-plot_ggplot_2curves <- function(matrixC1, matrixC2, legend, x, title, color, ylab, xlab, xlimite){
+plot_ggplot_2curves <- function(matrixC1, matrixC2, mylegend, x, title, color, ylab, xlab, xlimite){
   G1=data.frame(x, apply(matrixC1, 2, mean), apply(matrixC2, 2, mean))
-  colnames(G1)=c("abscisse", legend)
-  plot_data=gather(G1, condition, valeur, legend, factor_key=TRUE)
+  colnames(G1)=c("abscisse", mylegend)
+  plot_data=gather(G1, condition, valeur, mylegend, factor_key=TRUE)
   return(ggplot(plot_data) + geom_line(data=plot_data, aes(x=abscisse, y=valeur, group=condition, colour=condition )) +
-           geom_ribbon(aes(ymin = plot_data$valeur - std.error(matrixC1), ymax = plot_data$valeur + std.error(matrixC1), x=plot_data$abscisse, fill=condition), alpha = 0.2, stat="identity") + scale_color_manual(values=color) +
+           geom_ribbon(aes(ymin = plot_data$valeur - std.error(matrixC1), ymax = plot_data$valeur + std.error(matrixC1), x=plot_data$abscisse, fill=condition), alpha = 0.2, stat="identity") + 
+           scale_color_manual(values=color) +scale_fill_manual(values=color) +
            labs(x=xlab, y=ylab, title=title) + theme_bw() + ylim(0, xlimite))
 }
 
-plot_ggplot_fivecurves <- function(matrixC1, matrixC2, matrixC3, matrixC4, matrixC5, legend, x, title, color, ylab, xlab, xlimite){
+plot_ggplot_fivecurves <- function(matrixC1, matrixC2, matrixC3, matrixC4, matrixC5, mylegend, x, title, color, ylab, xlab, xlimite){
   G1=data.frame(x, apply(matrixC1, 2, mean), apply(matrixC2, 2, mean), apply(matrixC3, 2, mean), apply(matrixC4, 2, mean), apply(matrixC5, 2, mean))
-  colnames(G1)=c("abscisse", legend)
-  plot_data=gather(G1, condition, valeur, legend, factor_key=TRUE)
+  colnames(G1)=c("abscisse", mylegend)
+  plot_data=gather(G1, condition, valeur, mylegend, factor_key=TRUE)
   return(ggplot(plot_data) + geom_line(data=plot_data, aes(x=abscisse, y=valeur, group=condition, colour=condition )) +
-           geom_ribbon(aes(ymin = plot_data$valeur - std.error(matrixC1), ymax = plot_data$valeur + std.error(matrixC1), x=plot_data$abscisse, fill=condition), alpha = 0.2, stat="identity") + scale_color_manual(values=color) +
+           geom_ribbon(aes(ymin = plot_data$valeur - std.error(matrixC1), ymax = plot_data$valeur + std.error(matrixC1), x=plot_data$abscisse, fill=condition), alpha = 0.2, stat="identity") + 
+           scale_color_manual(values=color) + scale_fill_manual(values=color) +
            labs(x=xlab, y=ylab, title=title) + theme_bw() + ylim(0, xlimite))
 }
 
 
-plot_before_afternorm_2profiles <- function(sample1, sample2, D_TSS, legend, x, title, radius, step, color, xlab, ylab){
+plot_before_afternorm_2profiles <- function(sample1, sample2, D_TSS, mylegend, x, title, radius, step, color, xlab, ylab){
   regionD_TSS=prepareRegionToPlot_strandInDataP(D_TSS, radius, step)
   repD_sample1=compute_matrixOne(sample1, regionD_TSS, radius, step)
   repD_sample2=compute_matrixOne(sample2, regionD_TSS, radius, step)
 
   valmax=max(apply(repD_sample1[[1]], 2, mean), apply(repD_sample2[[1]], 2, mean))+5
-  print(plot_ggplot_2curves(repD_sample1[[1]], repD_sample2[[1]], legend, x, title, color, ylab, xlab, valmax))
+  print(plot_ggplot_2curves(repD_sample1[[1]], repD_sample2[[1]], mylegend, x, title, color, ylab, xlab, valmax))
 }
 
-plot_before_afternorm_3profiles <- function(sample1, sample2, sample3, D_TSS, legend, x, title, radius, step, color, xlab, ylab){
+plot_before_afternorm_3profiles <- function(sample1, sample2, sample3, D_TSS, mylegend, x, title, radius, step, color, xlab, ylab){
 
   regionD_TSS=prepareRegionToPlot_strandInDataP(D_TSS, radius, step)
   print(regionD_TSS)
@@ -1301,10 +1300,10 @@ plot_before_afternorm_3profiles <- function(sample1, sample2, sample3, D_TSS, le
 
   valmax=max(apply(repD_sample1[[1]], 2, mean), apply(repD_sample2[[1]], 2, mean), apply(repD_sample3[[1]], 2, mean))+5
 
-  print(plot_ggplot_3curves(repD_sample1[[1]], repD_sample2[[1]], repD_sample3[[1]], legend, x, title, color, ylab, xlab, valmax))
+  print(plot_ggplot_3curves(repD_sample1[[1]], repD_sample2[[1]], repD_sample3[[1]], mylegend, x, title, color, ylab, xlab, valmax))
 }
 
-plot_before_afternorm_4profiles <- function(sample1, sample2, sample3, sample4, D_TSS, legend, x, title, radius, step, color, xlab, ylab){
+plot_before_afternorm_4profiles <- function(sample1, sample2, sample3, sample4, D_TSS, mylegend, x, title, radius, step, color, xlab, ylab){
   regionD_TSS=prepareRegionToPlot_strandInDataP(D_TSS, radius, step)
   repD_sample1=compute_matrixOne(sample1, regionD_TSS, radius, step)
   repD_sample2=compute_matrixOne(sample2, regionD_TSS, radius, step)
@@ -1313,11 +1312,11 @@ plot_before_afternorm_4profiles <- function(sample1, sample2, sample3, sample4, 
 
 
   valmax=max(apply(repD_sample1[[1]], 2, mean), apply(repD_sample2[[1]], 2, mean), apply(repD_sample3[[1]], 2, mean), apply(repD_sample4[[1]], 2, mean))+5
-  print(plot_ggplot_4curves(repD_sample1[[1]], repD_sample2[[1]], repD_sample3[[1]], repD_sample4[[1]], legend, x, title, color, ylab, xlab, valmax))
+  print(plot_ggplot_4curves(repD_sample1[[1]], repD_sample2[[1]], repD_sample3[[1]], repD_sample4[[1]], mylegend, x, title, color, ylab, xlab, valmax))
 
 }
 
-plot_before_afternorm_5profiles <- function(sample1, sample2, sample3, sample4, sample5, D_TSS, legend, x, title, radius, step, color, xlab, ylab){
+plot_before_afternorm_5profiles <- function(sample1, sample2, sample3, sample4, sample5, D_TSS, mylegend, x, title, radius, step, color, xlab, ylab){
   regionD_TSS=prepareRegionToPlot_strandInDataP(D_TSS, radius, step)
   repD_sample1=compute_matrixOne(sample1, regionD_TSS, radius, step)
   repD_sample2=compute_matrixOne(sample2, regionD_TSS, radius, step)
@@ -1327,11 +1326,11 @@ plot_before_afternorm_5profiles <- function(sample1, sample2, sample3, sample4, 
 
   valmax=max(apply(repD_sample1[[1]], 2, mean), apply(repD_sample2[[1]], 2, mean), apply(repD_sample3[[1]], 2, mean), apply(repD_sample4[[1]], 2, mean), apply(repD_sample5[[1]], 2, mean))+5
 
-  print(plot_ggplot_fivecurves(repD_sample1[[1]], repD_sample2[[1]], repD_sample3[[1]], repD_sample4[[1]], repD_sample5[[1]], legend, x, title, color, ylab, xlab, valmax))
+  print(plot_ggplot_fivecurves(repD_sample1[[1]], repD_sample2[[1]], repD_sample3[[1]], repD_sample4[[1]], repD_sample5[[1]], mylegend, x, title, color, ylab, xlab, valmax))
 }
 
 
-plot_before_afternorm_several <- function(sample1, sample2, sample3, sample4, sample5, D_TSS, legend, x, title, radius, step, color, xlab, ylab){
+plot_before_afternorm_several <- function(sample1, sample2, sample3, sample4, sample5, D_TSS, mylegend, x, title, radius, step, color, xlab, ylab){
   regionD_TSS=prepareRegionToPlot_strandInDataP(D_TSS, radius, step)
   repD_sample1=compute_matrixOne(sample1, regionD_TSS, radius, step)
   repD_sample2=compute_matrixOne(sample2, regionD_TSS, radius, step)
@@ -1339,11 +1338,11 @@ plot_before_afternorm_several <- function(sample1, sample2, sample3, sample4, sa
   repD_sample4=compute_matrixOne(sample4, regionD_TSS, radius, step)
   repD_sample5=compute_matrixOne(sample5, regionD_TSS, radius, step)
   valmax=max(apply(repD_sample1[[1]], 2, mean), apply(repD_sample2[[1]], 2, mean), apply(repD_sample3[[1]], 2, mean), apply(repD_sample4[[1]], 2, mean), apply(repD_sample5[[1]], 2, mean))+5
-  print(plot_ggplot_fivecurves(repD_sample1[[1]], repD_sample2[[1]], repD_sample3[[1]], repD_sample4[[1]], repD_sample5[[1]], legend, x, title, color, ylab, xlab, valmax))
+  print(plot_ggplot_fivecurves(repD_sample1[[1]], repD_sample2[[1]], repD_sample3[[1]], repD_sample4[[1]], repD_sample5[[1]], mylegend, x, title, color, ylab, xlab, valmax))
 }
 
 
-fill_statsAfter_2profiles <- function(sample1, sample2, D_TSS, legend, x, title, radius, step, color, xlab, ylab, DF_after){
+fill_statsAfter_2profiles <- function(sample1, sample2, D_TSS, mylegend, x, title, radius, step, color, xlab, ylab, DF_after){
   regionD_TSS=prepareRegionToPlot_strandInDataP(D_TSS, radius, step)
   repD_sample1=compute_matrixOne(sample1, regionD_TSS, radius, step)
   repD_sample2=compute_matrixOne(sample2, regionD_TSS, radius, step)
@@ -1352,26 +1351,26 @@ fill_statsAfter_2profiles <- function(sample1, sample2, D_TSS, legend, x, title,
   repD_sample1_av=apply(repD_sample1[[1]], 2, mean)
   repD_sample2_av=apply(repD_sample2[[1]], 2, mean)
 
-  DF_after[[legend[1]]]=repD_sample1_av
-  DF_after[[legend[2]]]=repD_sample2_av
+  DF_after[[mylegend[1]]]=repD_sample1_av
+  DF_after[[mylegend[2]]]=repD_sample2_av
 
   return(DF_after)
 }
 
-fill_statsAfter_1profiles <- function(sample1, D_TSS, legend, x, title, radius, step, color, xlab, ylab, DF_after){
+fill_statsAfter_1profiles <- function(sample1, D_TSS, mylegend, x, title, radius, step, color, xlab, ylab, DF_after){
   regionD_TSS=prepareRegionToPlot_strandInDataP(D_TSS, radius, step)
   repD_sample1=compute_matrixOne(sample1, regionD_TSS, radius, step)
 
 
   repD_sample1_av=apply(repD_sample1[[1]], 2, mean)
 
-  DF_after[[legend[1]]]=repD_sample1_av
+  DF_after[[mylegend[1]]]=repD_sample1_av
 
   return(DF_after)
 }
 
 
-fill_statsAfter_3profiles <- function(sample1, sample2, sample3, D_TSS, legend, x, title, radius, step, color, xlab, ylab, DF_after){
+fill_statsAfter_3profiles <- function(sample1, sample2, sample3, D_TSS, mylegend, x, title, radius, step, color, xlab, ylab, DF_after){
   regionD_TSS=prepareRegionToPlot_strandInDataP(D_TSS, radius, step)
   repD_sample1=compute_matrixOne(sample1, regionD_TSS, radius, step)
   repD_sample2=compute_matrixOne(sample2, regionD_TSS, radius, step)
@@ -1382,15 +1381,15 @@ fill_statsAfter_3profiles <- function(sample1, sample2, sample3, D_TSS, legend, 
   repD_sample2_av=apply(repD_sample2[[1]], 2, mean)
   repD_sample3_av=apply(repD_sample3[[1]], 2, mean)
 
-  DF_after[[legend[1]]]=repD_sample1_av
-  DF_after[[legend[2]]]=repD_sample2_av
-  DF_after[[legend[3]]]=repD_sample3_av
+  DF_after[[mylegend[1]]]=repD_sample1_av
+  DF_after[[mylegend[2]]]=repD_sample2_av
+  DF_after[[mylegend[3]]]=repD_sample3_av
   return(DF_after)
 }
 
 
 
-fill_statsAfter_4profiles <- function(sample1, sample2, sample3, sample4, D_TSS, legend, x, title, radius, step, color, xlab, ylab, DF_after){
+fill_statsAfter_4profiles <- function(sample1, sample2, sample3, sample4, D_TSS, mylegend, x, title, radius, step, color, xlab, ylab, DF_after){
   regionD_TSS=prepareRegionToPlot_strandInDataP(D_TSS, radius, step)
   repD_sample1=compute_matrixOne(sample1, regionD_TSS, radius, step)
   repD_sample2=compute_matrixOne(sample2, regionD_TSS, radius, step)
@@ -1402,15 +1401,15 @@ fill_statsAfter_4profiles <- function(sample1, sample2, sample3, sample4, D_TSS,
   repD_sample3_av=apply(repD_sample3[[1]], 2, mean)
   repD_sample4_av=apply(repD_sample4[[1]], 2, mean)
 
-  DF_after[[legend[1]]]=repD_sample1_av
-  DF_after[[legend[2]]]=repD_sample2_av
-  DF_after[[legend[3]]]=repD_sample3_av
-  DF_after[[legend[4]]]=repD_sample4_av
+  DF_after[[mylegend[1]]]=repD_sample1_av
+  DF_after[[mylegend[2]]]=repD_sample2_av
+  DF_after[[mylegend[3]]]=repD_sample3_av
+  DF_after[[mylegend[4]]]=repD_sample4_av
 
   return(DF_after)
 }
 
-fill_statsAfter_5profiles <- function(sample1, sample2, sample3, sample4, sample5, D_TSS, legend, x, title, radius, step, color, xlab, ylab, DF_after){
+fill_statsAfter_5profiles <- function(sample1, sample2, sample3, sample4, sample5, D_TSS, mylegend, x, title, radius, step, color, xlab, ylab, DF_after){
   regionD_TSS=prepareRegionToPlot_strandInDataP(D_TSS, radius, step)
   repD_sample1=compute_matrixOne(sample1, regionD_TSS, radius, step)
   repD_sample2=compute_matrixOne(sample2, regionD_TSS, radius, step)
@@ -1424,11 +1423,11 @@ fill_statsAfter_5profiles <- function(sample1, sample2, sample3, sample4, sample
   repD_sample4_av=apply(repD_sample4[[1]], 2, mean)
   repD_sample5_av=apply(repD_sample5[[1]], 2, mean)
 
-  DF_after[[legend[1]]]=repD_sample1_av
-  DF_after[[legend[2]]]=repD_sample2_av
-  DF_after[[legend[3]]]=repD_sample3_av
-  DF_after[[legend[4]]]=repD_sample4_av
-  DF_after[[legend[5]]]=repD_sample5_av
+  DF_after[[mylegend[1]]]=repD_sample1_av
+  DF_after[[mylegend[2]]]=repD_sample2_av
+  DF_after[[mylegend[3]]]=repD_sample3_av
+  DF_after[[mylegend[4]]]=repD_sample4_av
+  DF_after[[mylegend[5]]]=repD_sample5_av
 
   return(DF_after)
 }
@@ -1439,7 +1438,7 @@ fill_statsAfter_5profiles <- function(sample1, sample2, sample3, sample4, sample
 #The expressionvalues should contain 2 columns: geneName and values
 #######
 build_clusters_expression <- function(Expressionvalues){
-  #Perform kmeans to determine the three clusters according to gene expression: genes high expressed, medium expressed, low expressed
+  #Perform kmeans to determine the three clusters according to gene expression: genes highly expressed, medium expressed, lowly expressed
   colnames(Expressionvalues)=c("geneName", "values")
   Expressionvalues$values=log2(Expressionvalues$values+1)
   Clusters=kmeans(Expressionvalues$values, 3)
@@ -1526,16 +1525,19 @@ plot_ggplot_threecurves <- function(matrixC1, matrixC2, matrixC3, x, title, colo
   colnames(G1)=c("abscisse", "Before Normalization", "After Normalization", "Reference")
   plot_data=gather(G1, condition, valeur, c("Before Normalization", "After Normalization", "Reference"), factor_key=TRUE)
   return(ggplot(plot_data) + geom_line(data=plot_data, aes(x=abscisse, y=valeur, group=condition, colour=condition )) +
-           geom_ribbon(aes(ymin = plot_data$valeur - std.error(matrixC1), ymax = plot_data$valeur + std.error(matrixC1), x=plot_data$abscisse, fill=condition), alpha = 0.2, stat="identity") + scale_color_manual(values=color) +
+           geom_ribbon(aes(ymin = plot_data$valeur - std.error(matrixC1), ymax = plot_data$valeur + std.error(matrixC1), x=plot_data$abscisse, fill=condition), alpha = 0.2, stat="identity") + 
+           scale_color_manual(values=color) + scale_fill_manual(values=color) +
            labs(x=xlab, y=ylab, title=title) + theme_bw())
 }
 
 plot_ggplot_threecurves_expression <- function(matrixC1, matrixC2, matrixC3, x, title, color, ylab, xlab){
   G1=data.frame(x, apply(matrixC1, 2, mean), apply(matrixC2, 2, mean), apply(matrixC3, 2, mean))
-  colnames(G1)=c("abscisse", "Low expressed", "Medium expressed", "High expressed")
-  plot_data=gather(G1, condition, valeur, c("Low expressed", "Medium expressed", "High expressed"), factor_key=TRUE)
+  colnames(G1)=c("abscisse", "Lowly expressed", "Medium expressed", "Highly expressed")
+  plot_data=gather(G1, condition, valeur, c("Lowly expressed", "Medium expressed", "Highly expressed"), factor_key=TRUE)
   return(ggplot(plot_data) + geom_line(data=plot_data, aes(x=abscisse, y=valeur, group=condition, colour=condition )) +
-           geom_ribbon(aes(ymin = plot_data$valeur - std.error(matrixC1), ymax = plot_data$valeur + std.error(matrixC1), x=plot_data$abscisse, fill=condition), alpha = 0.2, stat="identity") + scale_color_manual(values=color) +
+           geom_ribbon(aes(ymin = plot_data$valeur - std.error(matrixC1), ymax = plot_data$valeur + std.error(matrixC1), 
+            x=plot_data$abscisse, fill=condition), alpha = 0.2, stat="identity") + scale_color_manual(values=color) 
+           + scale_fill_manual(values=color) +
            labs(x=xlab, y=ylab, title=title) + theme_bw())
 }
 
@@ -1564,7 +1566,7 @@ profiles_gene_expression <- function(clusters, bw, D_TSS, radius, step){
 #Evaluate the quality of the normalization
 ###
 
-fill_statsAfter <- function(sample1, sample2, sample3, sample4, sample5, D_TSS, legend, x, title, radius, step, color, xlab, ylab, DF_after, ref){
+fill_statsAfter <- function(sample1, sample2, sample3, sample4, sample5, D_TSS, mylegend, x, title, radius, step, color, xlab, ylab, DF_after, ref){
   regionD_TSS=prepareRegionToPlot_strandInDataP(D_TSS, radius, step)
   repD_sample1=compute_matrixOne(sample1, regionD_TSS, radius, step)
   repD_sample2=compute_matrixOne(sample2, regionD_TSS, radius, step)
@@ -1578,23 +1580,23 @@ fill_statsAfter <- function(sample1, sample2, sample3, sample4, sample5, D_TSS, 
   repD_sample4_av=apply(repD_sample4[[1]], 2, mean)
   repD_sample5_av=apply(repD_sample5[[1]], 2, mean)
   if (ref=="popo"){
-    DF_after[[legend[1]]]=repD_sample1_av
-    DF_after[[legend[2]]]=repD_sample2_av
-    DF_after[[legend[3]]]=repD_sample3_av
-    DF_after[[legend[4]]]=repD_sample4_av
-    DF_after[[legend[5]]]=repD_sample5_av
+    DF_after[[mylegend[1]]]=repD_sample1_av
+    DF_after[[mylegend[2]]]=repD_sample2_av
+    DF_after[[mylegend[3]]]=repD_sample3_av
+    DF_after[[mylegend[4]]]=repD_sample4_av
+    DF_after[[mylegend[5]]]=repD_sample5_av
   }else{
-    DF_after[[legend[2]]]=repD_sample2_av
-    DF_after[[legend[3]]]=repD_sample3_av
-    DF_after[[legend[4]]]=repD_sample4_av
-    DF_after[[legend[5]]]=repD_sample5_av
+    DF_after[[mylegend[2]]]=repD_sample2_av
+    DF_after[[mylegend[3]]]=repD_sample3_av
+    DF_after[[mylegend[4]]]=repD_sample4_av
+    DF_after[[mylegend[5]]]=repD_sample5_av
   }
   print("La longueur apres fill stat after est : ")
   print(length(DF_after))
   return(DF_after)
 }
 
-fill_statsBefore <- function(sample1, sample2, sample3, sample4, sample5, D_TSS, legend, x, title, radius, step, color, xlab, ylab, DF_before, ref){
+fill_statsBefore <- function(sample1, sample2, sample3, sample4, sample5, D_TSS, mylegend, x, title, radius, step, color, xlab, ylab, DF_before, ref){
   regionD_TSS=prepareRegionToPlot_strandInDataP(D_TSS, radius, step)
   repD_sample1=compute_matrixOne(sample1, regionD_TSS, radius, step)
   repD_sample2=compute_matrixOne(sample2, regionD_TSS, radius, step)
@@ -1608,16 +1610,16 @@ fill_statsBefore <- function(sample1, sample2, sample3, sample4, sample5, D_TSS,
   repD_sample4_av=apply(repD_sample4[[1]], 2, mean)
   repD_sample5_av=apply(repD_sample5[[1]], 2, mean)
   if (ref=="popo"){
-    DF_before[[legend[1]]]=repD_sample1_av
-    DF_before[[legend[2]]]=repD_sample2_av
-    DF_before[[legend[3]]]=repD_sample3_av
-    DF_before[[legend[4]]]=repD_sample4_av
-    DF_before[[legend[5]]]=repD_sample5_av
+    DF_before[[mylegend[1]]]=repD_sample1_av
+    DF_before[[mylegend[2]]]=repD_sample2_av
+    DF_before[[mylegend[3]]]=repD_sample3_av
+    DF_before[[mylegend[4]]]=repD_sample4_av
+    DF_before[[mylegend[5]]]=repD_sample5_av
   }else{
-    DF_before[[legend[1]]]=repD_sample1_av
-    DF_before[[legend[2]]]=repD_sample2_av
-    DF_before[[legend[3]]]=repD_sample3_av
-    DF_before[[legend[4]]]=repD_sample4_av
+    DF_before[[mylegend[1]]]=repD_sample1_av
+    DF_before[[mylegend[2]]]=repD_sample2_av
+    DF_before[[mylegend[3]]]=repD_sample3_av
+    DF_before[[mylegend[4]]]=repD_sample4_av
   }
   return(DF_before)
 }
@@ -1746,33 +1748,33 @@ computeStats<-function(fileBefore, fileAfter, nSamples){
 # MAIN FUNCTIONS THAT WILL BE RUN VALENTINA VERSION
 ####################################################
 
-plot_expression <- function(RPKM, raw_read_count, fileWithPaths, output_dir, organism, histoneMark="ChIP-seq signal"){
+plot_expression <- function(RPKM=NULL, raw_read_count=NULL, path_to_bw, output_dir=".", organism, histone_mark="ChIP-seq signal"){
   if (organism == "hg19"){
     data("A_hg19")
     data("TSS_hg19")
     data("allgenes_hg19")
-    exonsLength=A_hg19
+    exon_lengths=A_hg19
     D_TSS=TSS_hg19
     Allgenes=allgenes_hg19
   }else if(organism == "hg38"){
     data("A_hg38")
     data("TSS_hg38")
     data("allgenes_hg38")
-    exonsLength=A_hg38
+    exon_lengths=A_hg38
     D_TSS=TSS_hg38
     Allgenes=allgenes_hg38
   }else if(organism == "mm10"){
     data("A_mm10")
     data("TSS_mm10")
     data("allgenes_mm10")
-    exonsLength=A_mm10
+    exon_lengths=A_mm10
     D_TSS=TSS_mm10
     Allgenes=allgenes_mm10
   }else if(organism == "mm9"){
     data("A_mm9")
     data("TSS_mm9")
     data("allgenes_mm9")
-    exonsLength=A_mm9
+    exon_lengths=A_mm9
     D_TSS=TSS_mm9
     Allgenes=allgenes_mm9
   }
@@ -1788,24 +1790,32 @@ plot_expression <- function(RPKM, raw_read_count, fileWithPaths, output_dir, org
   radius=4000
   step=50
   x=seq(-radius, radius, by=step)
-  paths=read.table(fileWithPaths, header=FALSE)
   plist_expression=list()
-  nSamples=nrow(paths)
+  nSamples=length(path_to_bw)
   #Check if the output_dir parameter is provided
   if (is.null(output_dir)==TRUE){
-    return(cat("You should provide a path to an existing folder for the output files."))
+    output_dir="."; #should be already . by default
   }else if(is.null(D_TSS)==TRUE){
     return(cat("You should provide a data frame containing TSS information for the organism of interest. The data frame should contain the following columns: chrom start stop peakmax strand geneName. Some data frame are previously computed in the package: TSS_mm10 and TSS_hg19."))
-  }else if (is.null(fileWithPaths)==TRUE){
-    return(cat("You should provide a path to a text file containing path to .bigWig files."))
+  }else if (is.null(path_to_bw)==TRUE){
+    return(cat("You should provide a vector with path_to_bw to .bigWig files."))
   }
+  #add / to output_dir if needed:
+  if (!(str_sub(output_dir, start= -1)=="/")) {
+    output_dir=paste0(output_dir,"/")
+  }
+  #check that it the output folder exists:
+  if(!file.exists(output_dir)) {
+    return(cat("You should provide a path to a valid output directory using the parameter 'output_dir'"))
+  }
+  
   #Check if at least RPKM or raw read count has been provided
   if (is.null(RPKM)==TRUE & is.null(raw_read_count)==TRUE){
     return(cat("You should provide RPKM or raw_read_count"))
 
   } else if (is.null(RPKM)==TRUE & is.null(raw_read_count)!=TRUE){
     #if raw read count provided -> will compute RPKM
-    if (is.null(exonsLength)==TRUE){
+    if (is.null(exon_lengths)==TRUE){
       return(cat("You should provide exons length in order to compute RPKM from raw read counts"))
     }
 
@@ -1815,7 +1825,7 @@ plot_expression <- function(RPKM, raw_read_count, fileWithPaths, output_dir, org
 
       rawreadcount_current=data.frame(rawReadCount[,1], rawReadCount[,k+1])
 
-      tmp=get_RPKM(rawreadcount_current, exonsLength)
+      tmp=get_RPKM(rawreadcount_current, exon_lengths)
 
       if (k==1){
         D=tmp
@@ -1838,9 +1848,9 @@ plot_expression <- function(RPKM, raw_read_count, fileWithPaths, output_dir, org
   colnames(tmp_apply)=c("geneName", "values")
   #Clustering
   rep_clusters=build_clusters_expression(tmp_apply)
-  nSamples=nrow(paths)
+  nSamples=length(path_to_bw)
   for (i in 1:nSamples){
-    bw1=as.character(unlist(paths[[1]][i]))
+    bw1=path_to_bw[i]
 
     sample_nametmp1=strsplit(bw1, "/")[[1]]
     sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
@@ -1850,9 +1860,9 @@ plot_expression <- function(RPKM, raw_read_count, fileWithPaths, output_dir, org
 
     rep_profiles=profiles_gene_expression(rep_clusters, bw1_read, D_TSS, radius, step)
 
-    color=c("indianred4", "sandybrown", "steelblue4")
+    color=c("steelblue4", "sandybrown", "indianred4")
     #plot_ggplot_several(matrixC1, matrixC2, matrixC3, x, title, color)
-    p=plot_ggplot_threecurves_expression(rep_profiles[[1]], rep_profiles[[2]], rep_profiles[[3]], x, sample_name, color, paste("Average density of", histoneMark, sep=" "), "Distance from TSS [bp]")
+    p=plot_ggplot_threecurves_expression(rep_profiles[[1]], rep_profiles[[2]], rep_profiles[[3]], x, sample_name, color, paste("Average density of", histone_mark, sep=" "), "Distance from TSS [bp]")
     #p=plot_ggplot_several(rep_profiles[[1]], rep_profiles[[2]], rep_profiles[[3]], x, title, color)
     plist_expression=list.append(plist_expression, p)
   }
@@ -1868,73 +1878,87 @@ plot_expression <- function(RPKM, raw_read_count, fileWithPaths, output_dir, org
   #ggsave(paste(output_dir, "expression.pdf", sep=""), gridExtra::marrangeGrob(grobs = plist_expression, nrow=2, ncol=2))
 }
 
-
-ChIPIN_normalize <- function(RPKM, raw_read_count, pathToFileGenesNotMoving=NULL, sample_name, output_dir, organism, fileWithPaths, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=10, typeNorm="linear", nGroup=20, histoneMark="ChIP-seq signal"){
+CHIPIN_normalize <- function(path_to_bw, type_norm="linear", RPKM=NULL, raw_read_count=NULL, path_to_file_with_constant_genes=NULL, 
+                             sample_name="sample", output_dir=".", organism, beforeRegionStartLength=4000, 
+                             afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, 
+                             compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal"){
   radius=4000
   step=50
   DF_before=list()
   DF_after=list()
-
-  paths=read.table(fileWithPaths, header=FALSE)
-  nSamples=nrow(paths)
+ 
+  nSamples=length(path_to_bw)
 
   if (organism == "hg19"){
     data("A_hg19")
     data("TSS_hg19")
     data("allgenes_hg19")
-    exonsLength=A_hg19
+    exon_lengths=A_hg19
     D_TSS=TSS_hg19
     Allgenes=allgenes_hg19
   }else if(organism == "hg38"){
     data("A_hg38")
     data("TSS_hg38")
     data("allgenes_hg38")
-    exonsLength=A_hg38
+    exon_lengths=A_hg38
     D_TSS=TSS_hg38
     Allgenes=allgenes_hg38
   }else if(organism == "mm10"){
     data("A_mm10")
     data("TSS_mm10")
     data("allgenes_mm10")
-    exonsLength=A_mm10
+    exon_lengths=A_mm10
     D_TSS=TSS_mm10
     Allgenes=allgenes_mm10
   }else if(organism == "mm9"){
     data("A_mm9")
     data("TSS_mm9")
     data("allgenes_mm9")
-    exonsLength=A_mm9
+    exon_lengths=A_mm9
     D_TSS=TSS_mm9
     Allgenes=allgenes_mm9
   }
-  if (is.null(pathToFileGenesNotMoving)==TRUE & (is.null(RPKM)==FALSE | is.null(raw_read_count)==FALSE) & is.null(output_dir)==FALSE){
-    pathToFileGenesNotMoving=find_gene_not_moving(RPKM, raw_read_count, sample_name, output_dir, exonsLength, Allgenes, percentage)
-  }else if (is.null(pathToFileGenesNotMoving)==TRUE & is.null(RPKM)==TRUE & is.null(raw_read_count)==TRUE){
-    pathToFileGenesNotMoving=find_gene_not_moving(RPKM, raw_read_count, sample_name, output_dir, exonsLength, Allgenes, percentage)
-  }else if (is.null(pathToFileGenesNotMoving)==FALSE){
+  if (is.null(output_dir)) {output_dir="."} #should never happen
+  #add / to output_dir if needed:
+  if (!(str_sub(output_dir, start= -1)=="/")) {
+    output_dir=paste0(output_dir,"/")
+  }
+  #check that it the output folder exists:
+  if(!file.exists(output_dir)) {
+    return(cat("You should provide a path to a valid output directory using the parameter 'output_dir'"))
+  }
+  
+  if (is.null(path_to_file_with_constant_genes)==TRUE){
+    path_to_file_with_constant_genes=find_gene_not_moving(RPKM, raw_read_count, sample_name, output_dir, exon_lengths, Allgenes, percentage)
+  }else {
     cat("\n")
-    cat("Constant Genes are provided.")
-    cat("\n")
-  }else{
-    cat("\n")
-    cat("One or more argument is not well provided for the function that will determine Constant Genes.")
+    cat("Constant genes are provided.")
     cat("\n")
   }
-  if (typeNorm=="linear" & is.null(fileWithPaths)==FALSE & is.null(output_dir)==FALSE & is.null(D_TSS)==FALSE){
-    pathRenorm=linear_normalization(pathToFileGenesNotMoving, fileWithPaths, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, output_dir)
+  #If both RPKM and raw_read_count values are set to NULL, all genes will be used for the normalization; "expression_plot" (see below) will be set to FALSE.
+  if (expression_plot & is.null(RPKM) & is.null(raw_read_count)){
+    expression_plot=FALSE
+    cat("expression_plot set to FALSE as no gene expression data are provided")
+  }
+  if (is.null(path_to_bw)) {
+    return(cat("please provide paths to your .bw files using the mandatory parameter 'path_to_bw'"))
+  }
+  
+  if (type_norm=="linear" & is.null(D_TSS)==FALSE){
+    pathRenorm=linear_normalization(path_to_file_with_constant_genes, path_to_bw, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, output_dir)
 
-    rep_stats_after=plot_after_linear(pathRenorm, output_dir, pathToFileGenesNotMoving, step, DF_after,histoneMark)
+    rep_stats_after=plot_after_linear(unlist(pathRenorm), output_dir, path_to_file_with_constant_genes, step, DF_after,histone_mark)
 
-    rep_stats_before=plot_before_quantile(fileWithPaths, output_dir, pathToFileGenesNotMoving, step, DF_before, histoneMark)
-  }else if (typeNorm=="quantile" & is.null(fileWithPaths)==FALSE & is.null(output_dir)==FALSE & is.null(D_TSS)==FALSE){
+    rep_stats_before=plot_before_quantile(path_to_bw, output_dir, path_to_file_with_constant_genes, step, DF_before, histone_mark)
+  }else if (type_norm=="quantile" & is.null(D_TSS)==FALSE){
 
-    pathRenorm=quantile_norm(fileWithPaths, pathToFileGenesNotMoving, nGroup, output_dir, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize)
+    pathRenorm=quantile_norm(path_to_bw, path_to_file_with_constant_genes, nGroup, output_dir, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize)
 
-    rep_stats_after=plot_after_quantile(pathRenorm, output_dir, pathToFileGenesNotMoving, step, DF_after, histoneMark)
+    rep_stats_after=plot_after_quantile(unlist(pathRenorm), output_dir, path_to_file_with_constant_genes, step, DF_after, histone_mark)
 
-    rep_stats_before=plot_before_quantile(fileWithPaths, output_dir, pathToFileGenesNotMoving, step, DF_before, histoneMark)
+    rep_stats_before=plot_before_quantile(path_to_bw, output_dir, path_to_file_with_constant_genes, step, DF_before, histone_mark)
   }else{
-    cat("One or more argument is not well provided for the normalization process")
+    return(cat("wrong value for the 'organism' parameter. Supported genomes: mm9, mm10, hg19, hg38"))
   }
   #Write stats
   write.table(data.frame(rep_stats_before), paste(output_dir, "StatsBefore.txt", sep=""), quote=F, sep="\t", col.names=F, row.names=F)
@@ -1944,13 +1968,13 @@ ChIPIN_normalize <- function(RPKM, raw_read_count, pathToFileGenesNotMoving=NULL
   if (expression_plot==TRUE){
 
     x=seq(-radius, radius, by=step)
-    plot_expression(RPKM, raw_read_count, fileWithPaths, output_dir, organism, histoneMark)
+    plot_expression(RPKM, raw_read_count, path_to_bw, output_dir, organism, histone_mark)
   }
   if (compute_stat==TRUE){
     cat("\n")
     cat("Will compute statistics before and after normalization in % of the highest density curve.")
     cat("\n")
-    cat("The order of the printed percentage correspond to the order of the samples in the file with paths.")
+    cat("The order of the printed percentage correspond to the order of the samples in the file with path_to_bw.")
     computeStats(paste(output_dir, "StatsBefore.txt", sep=""), paste(output_dir, "StatsAfter.txt",  sep=""), nSamples)
   }
 }
