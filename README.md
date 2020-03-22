@@ -156,6 +156,10 @@ CHIPIN_normalize(path_to_bw=pathToFiles, type_norm="linear", RPKM=pathToRPKMfile
 
 ```
 
-Examples for running the two functions are also provided in the vignette file included in the package: file "CHIPIN-vignette.html". 
+Examples for running the two functions are also provided in the vignette file included in the package: file "CHIPIN-vignette.html". To open the HTML vignette, you can type:
+
+```
+openVignette("CHIPIN")
+```
 
 

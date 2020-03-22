@@ -1591,8 +1591,8 @@ fill_statsAfter <- function(sample1, sample2, sample3, sample4, sample5, D_TSS, 
     DF_after[[mylegend[4]]]=repD_sample4_av
     DF_after[[mylegend[5]]]=repD_sample5_av
   }
-  print("La longueur apres fill stat after est : ")
-  print(length(DF_after))
+  #print("La longueur apres fill stat after est : ")
+  #print(length(DF_after))
   return(DF_after)
 }
 
