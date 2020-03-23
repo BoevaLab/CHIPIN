@@ -1,6 +1,6 @@
 Package: CHIPIN
 Type: Package
-Title: ChIP-seq Intersamples Normalization
+Title: ChIP-seq Intersample Normalization
 Version: 0.1.0
 Author: L. Polit
 Maintainer: L. Polit <lelia-polit@orange.fr>
