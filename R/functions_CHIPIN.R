@@ -460,7 +460,7 @@ linear_normalization <- function(constant_genes_file, path_to_bw, beforeRegionSt
   cat("\n")
   cat("Run deeptools for reference sample")
   cat("\n")
-  system(paste("computeMatrix scale-regions -S", bw1, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name, "-p", "max))
+  system(paste("computeMatrix scale-regions -S", bw1, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name, "-p", "max"))
   matrix <- read.delim(output_name, header=FALSE, comment.char="@")
   val=data.frame(matrix[,7:ncol(matrix)])
   moyC1=apply(val, 2, function(x){return(mean(na.rm=TRUE, as.numeric(as.character(unlist(x)))))})
