@@ -925,6 +925,7 @@ plot_after_linear<-function(path_to_bw, output_folder, path_to_file_with_constan
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
           
           #TEST
+          sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
           print(c("BW is ", bw_current[k]))
           print(c("Sample name is", sample_name))
           #TEST
