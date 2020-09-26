@@ -697,10 +697,11 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
         sample_nametmp2_ref=sample_nametmp1_ref[length(sample_nametmp1_ref)]
         sample_name_ref_tmp=paste(c(strsplit(sample_nametmp2_ref, "[.]")[[1]][1:length(strsplit(sample_nametmp2_ref, "[.]")[[1]])-1]), collapse="")
         #sample_name_ref_tmp=strsplit(sample_nametmp2_ref, ".bw")[[1]]
-        sample_name_ref_tpm=strsplit(sample_name_ref_tmp, "_")[[1]][2]
-        if(is.na(sample_name_ref_tpm)){sample_name_ref_tpm=sample_name_ref_tmp}
+        #sample_name_ref_tpm=strsplit(sample_name_ref_tmp, "_")[[1]][2]
+        #if(is.na(sample_name_ref_tpm)){sample_name_ref_tpm=sample_name_ref_tmp}
         #sample_name_ref=paste(sample_name_ref_tpm[1], sample_name_ref_tpm[2], sep="_")
-        mylegend=c(mylegend, sample_name_ref_tpm)
+        mylegend=c(mylegend, sample_name_ref_tmp)
+        #mylegend=c(mylegend, sample_name_ref_tpm)
       }
       for (k in 1:length(bw_current)){
         if (i!= nbGraph){
@@ -713,9 +714,10 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
           sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
 
-          sample_name_final=strsplit(sample_name, "_")[[1]][2]
-          if (is.na(sample_name_final)){sample_name_final=sample_name}
-          mylegend=c(mylegend, sample_name_final)
+          #sample_name_final=strsplit(sample_name, "_")[[1]][2]
+          #if (is.na(sample_name_final)){sample_name_final=sample_name}
+          mylegend=c(mylegend, sample_name)
+          #mylegend=c(mylegend, sample_name_final)
           #sample_name_final=paste(sample_name_tmp[1], sample_name_tmp[2], sep="_")
 
 
@@ -769,10 +771,11 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
           sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
 
-          sample_name_final=strsplit(sample_name, "_")[[1]][2]
-          if(is.na(sample_name_final)){sample_name_final=sample_name}
+          #sample_name_final=strsplit(sample_name, "_")[[1]][2]
+          #if(is.na(sample_name_final)){sample_name_final=sample_name}
 
-          mylegend=c(mylegend, sample_name_final)
+          #mylegend=c(mylegend, sample_name_final)
+          mylegend=c(mylegend, sample_name)
         }
       }else if (nResteToPlot-4>0){
         listToPlot=c(listToPlot, getDatabw_woRemoveNoise(as.character(unlist(bw_ref))))
@@ -786,10 +789,11 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
           sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
 
-          sample_name_final=strsplit(sample_name, "_")[[1]][2]
-          if(is.na(sample_name_final)){sample_name_final=sample_name}
+          #sample_name_final=strsplit(sample_name, "_")[[1]][2]
+          #if(is.na(sample_name_final)){sample_name_final=sample_name}
           #sample_name_final=paste(sample_name_tmp[1], sample_name_tmp[2], sep="_")
-          mylegend=c(mylegend, sample_name_final)
+          mylegend=c(mylegend, sample_name)
+          #mylegend=c(mylegend, sample_name_final)
         }
       }
 
@@ -828,11 +832,11 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
       sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
       #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
 
-      sample_name_final=strsplit(sample_name, "_")[[1]][2]
-      if(is.na(sample_name_final)){sample_name_final=sample_name}
+      #sample_name_final=strsplit(sample_name, "_")[[1]][2]
+      #if(is.na(sample_name_final)){sample_name_final=sample_name}
 
       #sample_name_final=paste(sample_name_tmp[1], sample_name_tmp[2], sep="_")
-      mylegend=c(mylegend, sample_name_final)
+      mylegend=c(mylegend, sample_name)
     }
     #Given the number of samples to plot we choose the appropriate function
     if (nSamples==2){
