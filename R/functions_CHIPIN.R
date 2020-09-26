@@ -955,7 +955,7 @@ plot_after_linear<-function(path_to_bw, output_folder, path_to_file_with_constan
         # bw4=getDatabw_woRemoveNoise(as.character(unlist(bw_current[4])))
         # bw5=getDatabw_woRemoveNoise(as.character(unlist(bw_current[5])))
       }
-
+      print(mylegend)
       p=plot_before_afternorm_several(bw1, bw2, bw3, bw4, bw5, NotMoving, mylegend, seq(-4000, 4000, by=step), "After normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "lightsalmon2"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
       DF_after=list.append(fill_statsAfter(bw1, bw2, bw3, bw4, bw5, NotMoving, mylegend, seq(-4000, 4000, by=step), "After normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "lightsalmon2"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after, ref))
       plist=list.append(plist, p)
