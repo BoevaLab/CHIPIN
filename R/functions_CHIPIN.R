@@ -403,7 +403,7 @@ find_gene_not_moving <- function(RPKM, raw_read_count, sample_name, output_dir, 
 #######
 #run deeptools using genes not moving determined by find_gene_not_moving or supplied by the user then perform linear normalization with non zero intercept
 #######
-linear_normalization <- function(constant_genes_file, path_to_bw, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, output_dir, nThreads){
+linear_normalization <- function(constant_genes_file, path_to_bw, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, output_dir){
   cat("\n")
   cat("*****************************************")
   cat("\n")
@@ -460,7 +460,7 @@ linear_normalization <- function(constant_genes_file, path_to_bw, beforeRegionSt
   cat("\n")
   cat("Run deeptools for reference sample")
   cat("\n")
-  system(paste("computeMatrix scale-regions -S", bw1, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name, "-p", nThreads))
+  system(paste("computeMatrix scale-regions -S", bw1, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name))
   matrix <- read.delim(output_name, header=FALSE, comment.char="@")
   val=data.frame(matrix[,7:ncol(matrix)])
   moyC1=apply(val, 2, function(x){return(mean(na.rm=TRUE, as.numeric(as.character(unlist(x)))))})
@@ -483,7 +483,7 @@ linear_normalization <- function(constant_genes_file, path_to_bw, beforeRegionSt
     cat(sample_name)
     cat("\n")
 
-    system(paste("computeMatrix scale-regions -S", bw1, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name, "-p", nThreads))
+    system(paste("computeMatrix scale-regions -S", bw1, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name))
     cat("deeptools done")
     #Now all matrices are computed.
 
@@ -542,7 +542,7 @@ linear_normalization <- function(constant_genes_file, path_to_bw, beforeRegionSt
 #######
 #run deeptools using genes not moving determined by find_gene_not_moving or supplied by the user then perform quantile normalization
 #######
-quantile_norm <- function(path_to_bw, constant_genes_file, nGroup, output_folder, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, nThreads){
+quantile_norm <- function(path_to_bw, constant_genes_file, nGroup, output_folder, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize){
   cat("\n")
   cat("*****************************************")
   cat("\n")
@@ -565,7 +565,7 @@ quantile_norm <- function(path_to_bw, constant_genes_file, nGroup, output_folder
     cat("\n")
     cat(sample_name)
     cat("\n")
-    system(paste("computeMatrix scale-regions -S", current_bw, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name, "-p", nThreads))
+    system(paste("computeMatrix scale-regions -S", current_bw, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name))
     matrix <- read.delim(output_name, header=FALSE, comment.char="@")
     current_values=unlist(matrix[,7:ncol(matrix)], use.names=FALSE)
     current_values[which(is.nan(current_values)==TRUE)]=0
@@ -697,25 +697,27 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
         sample_nametmp2_ref=sample_nametmp1_ref[length(sample_nametmp1_ref)]
         sample_name_ref_tmp=paste(c(strsplit(sample_nametmp2_ref, "[.]")[[1]][1:length(strsplit(sample_nametmp2_ref, "[.]")[[1]])-1]), collapse="")
         #sample_name_ref_tmp=strsplit(sample_nametmp2_ref, ".bw")[[1]]
-        sample_name_ref_tpm=strsplit(sample_name_ref_tmp, "_")[[1]][2]
-        if(is.na(sample_name_ref_tpm)){sample_name_ref_tpm=sample_name_ref_tmp}
+        #sample_name_ref_tpm=strsplit(sample_name_ref_tmp, "_")[[1]][2]
+        #if(is.na(sample_name_ref_tpm)){sample_name_ref_tpm=sample_name_ref_tmp}
         #sample_name_ref=paste(sample_name_ref_tpm[1], sample_name_ref_tpm[2], sep="_")
-        mylegend=c(mylegend, sample_name_ref_tpm)
+        mylegend=c(mylegend, sample_name_ref_tmp)
+        #mylegend=c(mylegend, sample_name_ref_tpm)
       }
       for (k in 1:length(bw_current)){
         if (i!= nbGraph){
           if ((i != 1) & (k==1)){
             #The first sample in legend is always the reference
-            mylegend=c(mylegend, sample_name_ref_tpm)
+            mylegend=c(mylegend, sample_name_ref_tmp)
           }
           sample_nametmp1=strsplit(bw_current[k], "/")[[1]]
           sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
           sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
 
-          sample_name_final=strsplit(sample_name, "_")[[1]][2]
-          if (is.na(sample_name_final)){sample_name_final=sample_name}
-          mylegend=c(mylegend, sample_name_final)
+          #sample_name_final=strsplit(sample_name, "_")[[1]][2]
+          #if (is.na(sample_name_final)){sample_name_final=sample_name}
+          mylegend=c(mylegend, sample_name)
+          #mylegend=c(mylegend, sample_name_final)
           #sample_name_final=paste(sample_name_tmp[1], sample_name_tmp[2], sep="_")
 
 
@@ -760,7 +762,7 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
       mylegend=c()
       if ((nResteToPlot-4)<=0){
         listToPlot=c(listToPlot, getDatabw_woRemoveNoise(as.character(unlist(bw_ref))))
-        mylegend=c(mylegend, sample_name_ref_tpm)
+        mylegend=c(mylegend, sample_name_ref_tmp)
         for (j in 1:nResteToPlot){
           listToPlot=c(listToPlot, getDatabw_woRemoveNoise(path_to_bw[(nPlotted+j)]))
 
@@ -769,14 +771,15 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
           sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
 
-          sample_name_final=strsplit(sample_name, "_")[[1]][2]
-          if(is.na(sample_name_final)){sample_name_final=sample_name}
+          #sample_name_final=strsplit(sample_name, "_")[[1]][2]
+          #if(is.na(sample_name_final)){sample_name_final=sample_name}
 
-          mylegend=c(mylegend, sample_name_final)
+          #mylegend=c(mylegend, sample_name_final)
+          mylegend=c(mylegend, sample_name)
         }
       }else if (nResteToPlot-4>0){
         listToPlot=c(listToPlot, getDatabw_woRemoveNoise(as.character(unlist(bw_ref))))
-        mylegend=c(mylegend, sample_name_ref_tpm)
+        mylegend=c(mylegend, sample_name_ref_tmp)
         for (j in 1:nResteToPlot){
           listToPlot=c(listToPlot, getDatabw_woRemoveNoise(path_to_bw[(nPlotted+j)]))
 
@@ -786,10 +789,11 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
           sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
 
-          sample_name_final=strsplit(sample_name, "_")[[1]][2]
-          if(is.na(sample_name_final)){sample_name_final=sample_name}
+          #sample_name_final=strsplit(sample_name, "_")[[1]][2]
+          #if(is.na(sample_name_final)){sample_name_final=sample_name}
           #sample_name_final=paste(sample_name_tmp[1], sample_name_tmp[2], sep="_")
-          mylegend=c(mylegend, sample_name_final)
+          mylegend=c(mylegend, sample_name)
+          #mylegend=c(mylegend, sample_name_final)
         }
       }
 
@@ -828,11 +832,11 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
       sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
       #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
 
-      sample_name_final=strsplit(sample_name, "_")[[1]][2]
-      if(is.na(sample_name_final)){sample_name_final=sample_name}
+      #sample_name_final=strsplit(sample_name, "_")[[1]][2]
+      #if(is.na(sample_name_final)){sample_name_final=sample_name}
 
       #sample_name_final=paste(sample_name_tmp[1], sample_name_tmp[2], sep="_")
-      mylegend=c(mylegend, sample_name_final)
+      mylegend=c(mylegend, sample_name)
     }
     #Given the number of samples to plot we choose the appropriate function
     if (nSamples==2){
@@ -1913,7 +1917,7 @@ plot_expression <- function(RPKM=NULL, raw_read_count=NULL, path_to_bw, output_d
 CHIPIN_normalize <- function(path_to_bw, type_norm="linear", RPKM=NULL, raw_read_count=NULL, path_to_file_with_constant_genes=NULL,
                              sample_name="sample", output_dir=".", organism, beforeRegionStartLength=4000,
                              afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE,
-                             compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal", nThreads=1){
+                             compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal"){
   radius=4000
   step=50
   DF_before=list()
@@ -1977,14 +1981,14 @@ CHIPIN_normalize <- function(path_to_bw, type_norm="linear", RPKM=NULL, raw_read
   }
 
   if (type_norm=="linear" & is.null(D_TSS)==FALSE){
-    pathRenorm=linear_normalization(path_to_file_with_constant_genes, path_to_bw, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, output_dir, nThreads)
+    pathRenorm=linear_normalization(path_to_file_with_constant_genes, path_to_bw, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, output_dir)
 
     rep_stats_after=plot_after_linear(unlist(pathRenorm), output_dir, path_to_file_with_constant_genes, step, DF_after,histone_mark)
 
     rep_stats_before=plot_before_quantile(path_to_bw, output_dir, path_to_file_with_constant_genes, step, DF_before, histone_mark)
   }else if (type_norm=="quantile" & is.null(D_TSS)==FALSE){
 
-    pathRenorm=quantile_norm(path_to_bw, path_to_file_with_constant_genes, nGroup, output_dir, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, nThreads)
+    pathRenorm=quantile_norm(path_to_bw, path_to_file_with_constant_genes, nGroup, output_dir, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize)
 
     rep_stats_after=plot_after_quantile(unlist(pathRenorm), output_dir, path_to_file_with_constant_genes, step, DF_after, histone_mark)
 
