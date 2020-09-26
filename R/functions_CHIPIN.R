@@ -707,7 +707,7 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
         if (i!= nbGraph){
           if ((i != 1) & (k==1)){
             #The first sample in legend is always the reference
-            mylegend=c(mylegend, sample_name_ref_tpm)
+            mylegend=c(mylegend, sample_name_ref_tmp)
           }
           sample_nametmp1=strsplit(bw_current[k], "/")[[1]]
           sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
@@ -762,7 +762,7 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
       mylegend=c()
       if ((nResteToPlot-4)<=0){
         listToPlot=c(listToPlot, getDatabw_woRemoveNoise(as.character(unlist(bw_ref))))
-        mylegend=c(mylegend, sample_name_ref_tpm)
+        mylegend=c(mylegend, sample_name_ref_tmp)
         for (j in 1:nResteToPlot){
           listToPlot=c(listToPlot, getDatabw_woRemoveNoise(path_to_bw[(nPlotted+j)]))
 
@@ -779,7 +779,7 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
         }
       }else if (nResteToPlot-4>0){
         listToPlot=c(listToPlot, getDatabw_woRemoveNoise(as.character(unlist(bw_ref))))
-        mylegend=c(mylegend, sample_name_ref_tpm)
+        mylegend=c(mylegend, sample_name_ref_tmp)
         for (j in 1:nResteToPlot){
           listToPlot=c(listToPlot, getDatabw_woRemoveNoise(path_to_bw[(nPlotted+j)]))
 
