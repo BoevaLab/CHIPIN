@@ -1288,7 +1288,7 @@ plot_ggplot_4curves <- function(matrixC1, matrixC2, matrixC3, matrixC4, mylegend
   plot_data=gather(G1, condition, valeur, mylegend, factor_key=TRUE)
   return(ggplot(plot_data) + geom_line(data=plot_data, aes(x=abscisse, y=valeur, group=condition, colour=condition )) +
            geom_ribbon(aes(ymin = plot_data$valeur - std.error(matrixC1), ymax = plot_data$valeur + std.error(matrixC1), x=plot_data$abscisse, fill=condition), alpha = 0.2, stat="identity")
-         + scale_color_manual(values=color) + scale_fill_manual(values=color) +
+         + scale_color_manual(values=color) + scale_fill_colorblind() +
            labs(x=xlab, y=ylab, title=title) + theme_bw() + ylim(0, xlimite))
 }
 
@@ -1298,7 +1298,7 @@ plot_ggplot_3curves <- function(matrixC1, matrixC2, matrixC3, mylegend, x, title
   plot_data=gather(G1, condition, valeur, mylegend, factor_key=TRUE)
   return(ggplot(plot_data) + geom_line(data=plot_data, aes(x=abscisse, y=valeur, group=condition, colour=condition )) +
            geom_ribbon(aes(ymin = plot_data$valeur - std.error(matrixC1), ymax = plot_data$valeur + std.error(matrixC1), x=plot_data$abscisse, fill=condition), alpha = 0.2, stat="identity") +
-           scale_color_manual(values=color) +scale_fill_manual(values=color) +
+           scale_color_manual(values=color) + scale_fill_colorblind() +
            labs(x=xlab, y=ylab, title=title) + theme_bw() + ylim(0, xlimite))
 }
 
@@ -1308,7 +1308,7 @@ plot_ggplot_2curves <- function(matrixC1, matrixC2, mylegend, x, title, color, y
   plot_data=gather(G1, condition, valeur, mylegend, factor_key=TRUE)
   return(ggplot(plot_data) + geom_line(data=plot_data, aes(x=abscisse, y=valeur, group=condition, colour=condition )) +
            geom_ribbon(aes(ymin = plot_data$valeur - std.error(matrixC1), ymax = plot_data$valeur + std.error(matrixC1), x=plot_data$abscisse, fill=condition), alpha = 0.2, stat="identity") +
-           scale_color_manual(values=color) +scale_fill_manual(values=color) +
+           scale_color_manual(values=color) +scale_fill_colorblind() +
            labs(x=xlab, y=ylab, title=title) + theme_bw() + ylim(0, xlimite))
 }
 
@@ -1318,8 +1318,9 @@ plot_ggplot_fivecurves <- function(matrixC1, matrixC2, matrixC3, matrixC4, matri
   plot_data=gather(G1, condition, valeur, mylegend, factor_key=TRUE)
   return(ggplot(plot_data) + geom_line(data=plot_data, aes(x=abscisse, y=valeur, group=condition, colour=condition )) +
            geom_ribbon(aes(ymin = plot_data$valeur - std.error(matrixC1), ymax = plot_data$valeur + std.error(matrixC1), x=plot_data$abscisse, fill=condition), alpha = 0.2, stat="identity") +
-           scale_color_manual(values=color) + scale_fill_manual(values=color) +
+           scale_color_manual(values=color) + scale_fill_colorblind() +
            labs(x=xlab, y=ylab, title=title) + theme_bw() + ylim(0, xlimite))
+  #scale_fill_manual(values=color)
 }
 
 
