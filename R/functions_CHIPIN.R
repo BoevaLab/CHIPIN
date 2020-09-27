@@ -830,6 +830,8 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
       sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
 
       sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
+      sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
+
       #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
 
       #sample_name_final=strsplit(sample_name, "_")[[1]][2]
@@ -924,11 +926,7 @@ plot_after_linear<-function(path_to_bw, output_folder, path_to_file_with_constan
           sample_name=paste(c(strsplit(sample_nametmp1, "[.]")[[1]][1:length(strsplit(sample_nametmp1, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
           
-          #TEST
           sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
-          print(c("BW is ", bw_current[k]))
-          print(c("Sample name is", sample_name))
-          #TEST
           
           mylegend=c(mylegend, sample_name)
           #sample_name_final=strsplit(sample_name, "_")[[1]][2]
@@ -962,9 +960,6 @@ plot_after_linear<-function(path_to_bw, output_folder, path_to_file_with_constan
         # bw5=getDatabw_woRemoveNoise(as.character(unlist(bw_current[5])))
       }
       
-      #TEST
-      print(mylegend)
-      #TEST
       p=plot_before_afternorm_several(bw1, bw2, bw3, bw4, bw5, NotMoving, mylegend, seq(-4000, 4000, by=step), "After normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "lightsalmon2"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
       DF_after=list.append(fill_statsAfter(bw1, bw2, bw3, bw4, bw5, NotMoving, mylegend, seq(-4000, 4000, by=step), "After normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "lightsalmon2"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after, ref))
       plist=list.append(plist, p)
@@ -1194,6 +1189,7 @@ plot_before_quantile<-function(path_to_bw, output_folder, path_to_file_with_cons
 
 
           sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
+          sample_name
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
 
           mylegend=c(mylegend, sample_name)
