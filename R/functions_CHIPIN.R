@@ -1806,35 +1806,13 @@ computeStats<-function(fileBefore, fileAfter, nSamples){
 ####################################################
 
 plot_expression <- function(RPKM=NULL, raw_read_count=NULL, path_to_bw, output_dir=".", organism, histone_mark="ChIP-seq signal"){
-  if (organism == "hg19"){
-    data("A_hg19")
-    data("TSS_hg19")
-    data("allgenes_hg19")
-    exon_lengths=A_hg19
-    D_TSS=TSS_hg19
-    Allgenes=allgenes_hg19
-  }else if(organism == "hg38"){
-    data("A_hg38")
-    data("TSS_hg38")
-    data("allgenes_hg38")
-    exon_lengths=A_hg38
-    D_TSS=TSS_hg38
-    Allgenes=allgenes_hg38
-  }else if(organism == "mm10"){
-    data("A_mm10")
-    data("TSS_mm10")
-    data("allgenes_mm10")
-    exon_lengths=A_mm10
-    D_TSS=TSS_mm10
-    Allgenes=allgenes_mm10
-  }else if(organism == "mm9"){
-    data("A_mm9")
-    data("TSS_mm9")
-    data("allgenes_mm9")
-    exon_lengths=A_mm9
-    D_TSS=TSS_mm9
-    Allgenes=allgenes_mm9
-  }
+  
+  data(list = paste0("A_", organism))
+  data(list = paste0("TSS_", organism))
+  data(list = paste0("allgenes_", organism))
+  exon_lengths=eval(parse(text = paste0("A_", organism)))
+  D_TSS=eval(parse(text = paste0("TSS_", organism)))
+  Allgenes=eval(parse(text = paste0("allgenes_", organism)))
 
   cat("\n")
   cat("*****************************************")
@@ -1946,35 +1924,13 @@ CHIPIN_normalize <- function(path_to_bw, type_norm="linear", RPKM=NULL, raw_read
 
   nSamples=length(path_to_bw)
 
-  if (organism == "hg19"){
-    data("A_hg19")
-    data("TSS_hg19")
-    data("allgenes_hg19")
-    exon_lengths=A_hg19
-    D_TSS=TSS_hg19
-    Allgenes=allgenes_hg19
-  }else if(organism == "hg38"){
-    data("A_hg38")
-    data("TSS_hg38")
-    data("allgenes_hg38")
-    exon_lengths=A_hg38
-    D_TSS=TSS_hg38
-    Allgenes=allgenes_hg38
-  }else if(organism == "mm10"){
-    data("A_mm10")
-    data("TSS_mm10")
-    data("allgenes_mm10")
-    exon_lengths=A_mm10
-    D_TSS=TSS_mm10
-    Allgenes=allgenes_mm10
-  }else if(organism == "mm9"){
-    data("A_mm9")
-    data("TSS_mm9")
-    data("allgenes_mm9")
-    exon_lengths=A_mm9
-    D_TSS=TSS_mm9
-    Allgenes=allgenes_mm9
-  }
+  data(list = paste0("A_", organism))
+  data(list = paste0("TSS_", organism))
+  data(list = paste0("allgenes_", organism))
+  exon_lengths=eval(parse(text = paste0("A_", organism)))
+  D_TSS=eval(parse(text = paste0("TSS_", organism)))
+  Allgenes=eval(parse(text = paste0("allgenes_", organism)))
+  
   if (is.null(output_dir)) {output_dir="."} #should never happen
   #add / to output_dir if needed:
   if (!(str_sub(output_dir, start= -1)=="/")) {
