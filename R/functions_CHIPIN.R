@@ -961,6 +961,12 @@ plot_after_linear<-function(path_to_bw, output_folder, path_to_file_with_constan
         # bw5=getDatabw_woRemoveNoise(as.character(unlist(bw_current[5])))
       }
       
+      #TEST
+      print("\n")
+      print(mylegend)
+      print("\n")
+      #TEST
+      
       p=plot_before_afternorm_several(bw1, bw2, bw3, bw4, bw5, NotMoving, mylegend, seq(-4000, 4000, by=step), "After normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "lightsalmon2"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
       DF_after=list.append(fill_statsAfter(bw1, bw2, bw3, bw4, bw5, NotMoving, mylegend, seq(-4000, 4000, by=step), "After normalization", 4000, step, c("indianred4", "steelblue4", "darkorchid3", "forestgreen", "lightsalmon2"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after, ref))
       plist=list.append(plist, p)
@@ -985,10 +991,10 @@ plot_after_linear<-function(path_to_bw, output_folder, path_to_file_with_constan
           sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
 
           sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
+          sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
 
           mylegend=c(mylegend, sample_name)
-          print(mylegend)
         }
       }else if (nResteToPlot-4>0){
         listToPlot=c(listToPlot, getDatabw_woRemoveNoise(bw_ref))
@@ -1000,12 +1006,20 @@ plot_after_linear<-function(path_to_bw, output_folder, path_to_file_with_constan
           sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
 
           sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
+          sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
+
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
 
           mylegend=c(mylegend, sample_name)
         }
       }
 
+      #TEST
+      print("\n")
+      print(mylegend)
+      print("\n")
+      #TEST
+      
       if (length(listToPlot)==2){
         p=plot_before_afternorm_2profiles(listToPlot[[1]], listToPlot[[2]], NotMoving, mylegend, seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4", "steelblue4"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "))
         DF_after=list.append(fill_statsAfter_1profiles(listToPlot[[2]], NotMoving, mylegend[2], seq(-4000, 4000, by=step), "After Normalization", 4000, step, c("indianred4"), "Distance from TSS [bp]", paste("Average density of", histone_mark, sep=" "), DF_after))
