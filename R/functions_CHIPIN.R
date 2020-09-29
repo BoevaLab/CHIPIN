@@ -1897,6 +1897,8 @@ plot_expression <- function(RPKM=NULL, raw_read_count=NULL, path_to_bw, output_d
     sample_name=paste(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1], collapse = ".")
 
     bw1_read=getDatabw_woRemoveNoise(bw1)
+    
+    print(sample_name)
 
     rep_profiles=profiles_gene_expression(rep_clusters, bw1_read, D_TSS, radius, step)
 
@@ -1906,10 +1908,10 @@ plot_expression <- function(RPKM=NULL, raw_read_count=NULL, path_to_bw, output_d
     #p=plot_ggplot_several(rep_profiles[[1]], rep_profiles[[2]], rep_profiles[[3]], x, title, color)
     plist_expression=list.append(plist_expression, p)
     
-  end.time <- Sys.time()
-  time.taken <- end.time - start.time
-  print("Time taken for building clusters : ")
-  print(time.taken)
+    end.time <- Sys.time()
+    time.taken <- end.time - start.time
+    print("Time taken for building clusters : ")
+    print(time.taken)
     
   }
   #pdf('expression2.pdf',width=5, height=5)
