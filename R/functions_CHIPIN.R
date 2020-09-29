@@ -1876,6 +1876,8 @@ plot_expression <- function(RPKM=NULL, raw_read_count=NULL, path_to_bw, output_d
     RPKM_rep=read.table(RPKM, header=TRUE)
 
   }
+  start.time <- Sys.time()
+  
   tmpb <- RPKM_rep[,2:ncol(RPKM_rep)]
   #rownames(tmpb) <- RPKM_rep$V1
   tmp_apply=apply(data.matrix(tmpb), 1, mean)
@@ -1884,6 +1886,14 @@ plot_expression <- function(RPKM=NULL, raw_read_count=NULL, path_to_bw, output_d
   #Clustering
   rep_clusters=build_clusters_expression(tmp_apply)
   nSamples=length(path_to_bw)
+  
+  end.time <- Sys.time()
+  time.taken <- end.time - start.time
+  print("Time taken for building clusters : ")
+  print("\n")
+  print(time.taken)
+  print("\n")
+  
   for (i in 1:nSamples){
     bw1=path_to_bw[i]
 
