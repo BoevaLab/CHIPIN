@@ -1876,7 +1876,6 @@ plot_expression <- function(RPKM=NULL, raw_read_count=NULL, path_to_bw, output_d
     RPKM_rep=read.table(RPKM, header=TRUE)
 
   }
-  start.time <- Sys.time()
   
   tmpb <- RPKM_rep[,2:ncol(RPKM_rep)]
   #rownames(tmpb) <- RPKM_rep$V1
@@ -1887,14 +1886,10 @@ plot_expression <- function(RPKM=NULL, raw_read_count=NULL, path_to_bw, output_d
   rep_clusters=build_clusters_expression(tmp_apply)
   nSamples=length(path_to_bw)
   
-  end.time <- Sys.time()
-  time.taken <- end.time - start.time
-  print("Time taken for building clusters : ")
-  print("\n")
-  print(time.taken)
-  print("\n")
-  
   for (i in 1:nSamples){
+    
+    start.time <- Sys.time()
+    
     bw1=path_to_bw[i]
 
     sample_nametmp1=strsplit(bw1, "/")[[1]]
@@ -1910,6 +1905,12 @@ plot_expression <- function(RPKM=NULL, raw_read_count=NULL, path_to_bw, output_d
     p=plot_ggplot_threecurves_expression(rep_profiles[[1]], rep_profiles[[2]], rep_profiles[[3]], x, sample_name, color, paste("Average density of", histone_mark, sep=" "), "Distance from TSS [bp]")
     #p=plot_ggplot_several(rep_profiles[[1]], rep_profiles[[2]], rep_profiles[[3]], x, title, color)
     plist_expression=list.append(plist_expression, p)
+    
+  end.time <- Sys.time()
+  time.taken <- end.time - start.time
+  print("Time taken for building clusters : ")
+  print(time.taken)
+    
   }
   #pdf('expression2.pdf',width=5, height=5)
   main=marrangeGrob(grobs=plist_expression,ncol=2, nrow=2)
