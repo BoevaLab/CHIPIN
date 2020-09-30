@@ -1588,9 +1588,7 @@ plot_ggplot_threecurves <- function(matrixC1, matrixC2, matrixC3, x, title, colo
 }
 
 plot_ggplot_threecurves_expression <- function(matrixC1, matrixC2, matrixC3, x, title, color, ylab, xlab){
-  #G1=data.frame(x, apply(matrixC1, 2, mean), apply(matrixC2, 2, mean), apply(matrixC3, 2, mean))
-  G1=data.frame(x, parApply(cl, matrixC1, 2, mean), parApply(cl, matrixC2, 2, mean), parApply(cl, matrixC3, 2, mean))
-
+  G1=data.frame(x, apply(matrixC1, 2, mean), apply(matrixC2, 2, mean), apply(matrixC3, 2, mean))
   colnames(G1)=c("abscisse", "Lowly expressed", "Medium expressed", "Highly expressed")
   plot_data=gather(G1, condition, valeur, c("Lowly expressed", "Medium expressed", "Highly expressed"), factor_key=TRUE)
   return(ggplot(plot_data) + geom_line(data=plot_data, aes(x=abscisse, y=valeur, group=condition, colour=condition )) +
@@ -1936,10 +1934,7 @@ CHIPIN_normalize <- function(path_to_bw, type_norm="linear", RPKM=NULL, raw_read
   step=50
   DF_before=list()
   DF_after=list()
-  
-  #Make cluster for mutithreading apply
-  cl <- makeCluster(getOption("cl.cores", nThreads))
-
+ 
   nSamples=length(path_to_bw)
 
   data(list = paste0("A_", organism))
