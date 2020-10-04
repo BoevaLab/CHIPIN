@@ -1120,19 +1120,33 @@ plot_before_quantile<-function(path_to_bw, output_folder, path_to_file_with_cons
       }
       mylegend=c()
       if (i==1){
-        #Define the reference
+        
         bw_ref=path_to_bw[1]
-        sample_nametmp1_ref=strsplit(bw_ref, "/")[[1]]
+        sample_nametmp1_ref=strsplit(as.character(unlist(bw_ref)), "/")[[1]]
         sample_nametmp2_ref=sample_nametmp1_ref[length(sample_nametmp1_ref)]
-
         sample_name_ref_tmp=paste(c(strsplit(sample_nametmp2_ref, "[.]")[[1]][1:length(strsplit(sample_nametmp2_ref, "[.]")[[1]])-1]), collapse="")
+        #sample_name_ref_tmp=strsplit(sample_nametmp2_ref, ".bw")[[1]]
+        #sample_name_ref_tpm=strsplit(sample_name_ref_tmp, "_")[[1]][2]
+        #if(is.na(sample_name_ref_tpm)){sample_name_ref_tpm=sample_name_ref_tmp}
+        #sample_name_ref=paste(sample_name_ref_tpm[1], sample_name_ref_tpm[2], sep="_")
+        mylegend=c(mylegend, sample_name_ref_tmp)
+        #mylegend=c(mylegend, sample_name_ref_tpm)
+        
+        #OLD START
+        #Define the reference
+        #bw_ref=path_to_bw[1]
+        #sample_nametmp1_ref=strsplit(bw_ref, "/")[[1]]
+        #sample_nametmp2_ref=sample_nametmp1_ref[length(sample_nametmp1_ref)]
+
+        #sample_name_ref_tmp=paste(c(strsplit(sample_nametmp2_ref, "[.]")[[1]][1:length(strsplit(sample_nametmp2_ref, "[.]")[[1]])-1]), collapse="")
         #sample_name_ref_tmp=strsplit(sample_nametmp2_ref, ".bw")[[1]]
 
 
-        sample_name_ref=sample_name_ref_tmp
+        #sample_name_ref=sample_name_ref_tmp
         #sample_name_ref_tpm=strsplit(sample_name_ref_tmp, "_")[[1]][2]
         #sample_name_ref=paste(sample_name_ref_tpm[1], sample_name_ref_tpm[2], sep="_")
-        mylegend=c(mylegend, sample_name_ref_tmp)
+        #mylegend=c(mylegend, sample_name_ref_tmp)
+        #OLD END
       }
       for (k in 1:length(bw_current)){
         if (i!= nbGraph){
@@ -1145,6 +1159,9 @@ plot_before_quantile<-function(path_to_bw, output_folder, path_to_file_with_cons
 
 
           sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
+          #TEST START
+          sample_name=strsplit(sample_nametmp2, split = "[.]")[[1]][1]
+          #TEST END
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
 
           mylegend=c(mylegend, sample_name)
