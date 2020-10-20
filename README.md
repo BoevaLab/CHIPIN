@@ -1,3 +1,4 @@
+<!---
 Copywrite Lélia Polit, 2020
 
 >>> SOURCE LICENSE >>>
@@ -15,6 +16,9 @@ A copy of the GNU General Public License is available at
 http://www.fsf.org/licensing/licenses
  
  >>> END OF LICENSE >>>
+
+-->
+
 
 
 # CHIPIN
