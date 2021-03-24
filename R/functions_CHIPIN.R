@@ -1922,7 +1922,7 @@ plot_expression <- function(TPM=NULL, RPKM=NULL, raw_read_count=NULL, path_to_bw
     data("TSS_hg38")
     data("allgenes_hg38")
     exon_lengths=A_hg38
-    D_TSS=TSS_hg38
+    D_TSS=hg38TSS
     Allgenes=allgenes_hg38
   }else if(organism == "mm10"){
     data("A_mm10")
@@ -2071,7 +2071,7 @@ CHIPIN_normalize <- function(path_to_bw, type_norm="linear", TPM=NULL, RPKM=NULL
     data("TSS_hg38")
     data("allgenes_hg38")
     exon_lengths=A_hg38
-    D_TSS=TSS_hg38
+    D_TSS=hg38TSS
     Allgenes=allgenes_hg38
   }else if(organism == "mm10"){
     data("A_mm10")
