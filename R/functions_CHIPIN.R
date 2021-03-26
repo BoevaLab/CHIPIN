@@ -610,7 +610,7 @@ linear_normalization <- function(constant_genes_file, path_to_bw, beforeRegionSt
     cat(sample_name)
     cat("\n")
 
-    system(paste("computeMatrix scale-regions -S", bw1, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name, "-p", nThreads, "-p", nThreads))
+    system(paste("computeMatrix scale-regions -S", bw1, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name, "-p", nThreads))
     cat("deeptools done")
     #Now all matrices are computed.
 
