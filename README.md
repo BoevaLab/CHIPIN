@@ -54,7 +54,7 @@ Please see additional Python libraries required for Deeptools.
 https://deeptools.readthedocs.io/en/develop/content/installation.html
 
 
-We recommend to create a `anaconda` environment in which Deeptools is installed. That way you can launch RStudio and R in this environment and all the path variables are set correctly.
+We recommend to create an `anaconda` environment in which Deeptools is installed. In this case you can launch RStudio from this environment and all the path variables are set correctly.
 
 ```
 # create conda environment
@@ -64,7 +64,7 @@ conda activate CHIPIN
 # install Deeptools
 conda install -c bioconda deeptools
 
-# in the terminal with the environment activated launch RStudio 
+# launch RStudio from the terminal
 open -na Rstudio
 ```
 
