@@ -35,6 +35,7 @@ plot_expression(path_to_bw, type_norm="linear", RPKM=NULL, raw_read_count, outpu
   \item{percentage}{a value between 0 and 1 describing the percentage of the total number of genes that one wants to be defined as "constant_genes". Default: 0.1}
   \item{nGroup}{number of gene groups for quantile normalisation. Default: 20}
   \item{histone_mark}{name of the histone mark of interest; used to plot legends. Default:"ChIP-seq signal"}
+  \item{nThreads}{number of processors to use. Default: 1}
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
