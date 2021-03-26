@@ -105,7 +105,7 @@ get_readCountsfromTPM <- function(TPMvalues, exon_lengths){
   sumBase=0
   for (j in 1:nrow(TPMvalues)){
     if (as.character(unlist(TPMvalues[k,]$geneName)) %in% exonsnames){
-      tmp=which(as.character(unlist(exon_lengths$geneName)) == as.character(unlist(RPKMvalues[k,]$geneName)))
+      tmp=which(as.character(unlist(exon_lengths$geneName)) == as.character(unlist(TPMvalues[k,]$geneName)))
       if (length(tmp>1)){
         return(print("TPM values should be unique. Only one value for each gene."))
 
@@ -144,6 +144,7 @@ get_readCountsfromTPM <- function(TPMvalues, exon_lengths){
 #exon_lengths should have two columns: one with gene names, the second with gene lengths
 #######
 get_readCounts<-function(RPKMvalues, exon_lengths){
+
   colnames(RPKMvalues)=c("geneName", "value")
   colnames(exon_lengths)=c("geneName", "value")
   exonsnames=t(exon_lengths$geneName)
@@ -346,10 +347,11 @@ find_gene_not_moving <- function(TPM, RPKM, raw_read_count, sample_name, output_
     cat("Will use RPKM to find constant genes")
     cat("\n")
     RPKM_rep=read.table(RPKM, header=TRUE)
+    
     #Remove RPKM with a geneName equal to "--"
-    RPKM_rep_NoDup=RPKM_rep[which(RPKM_rep$V1 != "--"),]
+    RPKM_rep_NoDup=RPKM_rep[which(RPKM_rep[,1] != "--"),] 
     n_samples=ncol(RPKM_rep)-1
-
+    
     #Get read counts for each sample
     for (k in 1:(n_samples)){
       RPKM_current=data.frame(RPKM_rep_NoDup[,1], RPKM_rep_NoDup[,k+1])
@@ -1922,7 +1924,7 @@ plot_expression <- function(TPM=NULL, RPKM=NULL, raw_read_count=NULL, path_to_bw
     data("TSS_hg38")
     data("allgenes_hg38")
     exon_lengths=A_hg38
-    D_TSS=hg38TSS
+    D_TSS=TSS_hg38
     Allgenes=allgenes_hg38
   }else if(organism == "mm10"){
     data("A_mm10")
@@ -2071,7 +2073,7 @@ CHIPIN_normalize <- function(path_to_bw, type_norm="linear", TPM=NULL, RPKM=NULL
     data("TSS_hg38")
     data("allgenes_hg38")
     exon_lengths=A_hg38
-    D_TSS=hg38TSS
+    D_TSS=TSS_hg38
     Allgenes=allgenes_hg38
   }else if(organism == "mm10"){
     data("A_mm10")
