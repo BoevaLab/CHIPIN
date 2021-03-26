@@ -105,7 +105,7 @@ get_readCountsfromTPM <- function(TPMvalues, exon_lengths){
   sumBase=0
   for (j in 1:nrow(TPMvalues)){
     if (as.character(unlist(TPMvalues[k,]$geneName)) %in% exonsnames){
-      tmp=which(as.character(unlist(exon_lengths$geneName)) == as.character(unlist(RPKMvalues[k,]$geneName)))
+      tmp=which(as.character(unlist(exon_lengths$geneName)) == as.character(unlist(TPMvalues[k,]$geneName)))
       if (length(tmp>1)){
         return(print("TPM values should be unique. Only one value for each gene."))
 
@@ -144,6 +144,7 @@ get_readCountsfromTPM <- function(TPMvalues, exon_lengths){
 #exon_lengths should have two columns: one with gene names, the second with gene lengths
 #######
 get_readCounts<-function(RPKMvalues, exon_lengths){
+
   colnames(RPKMvalues)=c("geneName", "value")
   colnames(exon_lengths)=c("geneName", "value")
   exonsnames=t(exon_lengths$geneName)
@@ -346,10 +347,11 @@ find_gene_not_moving <- function(TPM, RPKM, raw_read_count, sample_name, output_
     cat("Will use RPKM to find constant genes")
     cat("\n")
     RPKM_rep=read.table(RPKM, header=TRUE)
+    
     #Remove RPKM with a geneName equal to "--"
-    RPKM_rep_NoDup=RPKM_rep[which(RPKM_rep$V1 != "--"),]
+    RPKM_rep_NoDup=RPKM_rep[which(RPKM_rep[,1] != "--"),] 
     n_samples=ncol(RPKM_rep)-1
-
+    
     #Get read counts for each sample
     for (k in 1:(n_samples)){
       RPKM_current=data.frame(RPKM_rep_NoDup[,1], RPKM_rep_NoDup[,k+1])
@@ -528,7 +530,7 @@ find_gene_not_moving <- function(TPM, RPKM, raw_read_count, sample_name, output_
 #######
 #run deeptools using genes not moving determined by find_gene_not_moving or supplied by the user then perform linear normalization with non zero intercept
 #######
-linear_normalization <- function(constant_genes_file, path_to_bw, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, output_dir){
+linear_normalization <- function(constant_genes_file, path_to_bw, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, output_dir, nThreads){
   cat("\n")
   cat("*****************************************")
   cat("\n")
@@ -585,7 +587,7 @@ linear_normalization <- function(constant_genes_file, path_to_bw, beforeRegionSt
   cat("\n")
   cat("Run deeptools for reference sample")
   cat("\n")
-  system(paste("computeMatrix scale-regions -S", bw1, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name))
+  system(paste("computeMatrix scale-regions -S", bw1, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name, "-p", nThreads))
   matrix <- read.delim(output_name, header=FALSE, comment.char="@")
   val=data.frame(matrix[,7:ncol(matrix)])
   moyC1=apply(val, 2, function(x){return(mean(na.rm=TRUE, as.numeric(as.character(unlist(x)))))})
@@ -608,7 +610,7 @@ linear_normalization <- function(constant_genes_file, path_to_bw, beforeRegionSt
     cat(sample_name)
     cat("\n")
 
-    system(paste("computeMatrix scale-regions -S", bw1, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name))
+    system(paste("computeMatrix scale-regions -S", bw1, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name, "-p", nThreads))
     cat("deeptools done")
     #Now all matrices are computed.
 
@@ -667,7 +669,7 @@ linear_normalization <- function(constant_genes_file, path_to_bw, beforeRegionSt
 #######
 #run deeptools using genes not moving determined by find_gene_not_moving or supplied by the user then perform quantile normalization
 #######
-quantile_norm <- function(path_to_bw, constant_genes_file, nGroup, output_folder, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize){
+quantile_norm <- function(path_to_bw, constant_genes_file, nGroup, output_folder, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, nThreads){
   cat("\n")
   cat("*****************************************")
   cat("\n")
@@ -690,7 +692,7 @@ quantile_norm <- function(path_to_bw, constant_genes_file, nGroup, output_folder
     cat("\n")
     cat(sample_name)
     cat("\n")
-    system(paste("computeMatrix scale-regions -S", current_bw, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name))
+    system(paste("computeMatrix scale-regions -S", current_bw, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name, "-p", nThreads))
     matrix <- read.delim(output_name, header=FALSE, comment.char="@")
     current_values=unlist(matrix[,7:ncol(matrix)], use.names=FALSE)
     current_values[which(is.nan(current_values)==TRUE)]=0
@@ -1922,7 +1924,7 @@ plot_expression <- function(TPM=NULL, RPKM=NULL, raw_read_count=NULL, path_to_bw
     data("TSS_hg38")
     data("allgenes_hg38")
     exon_lengths=A_hg38
-    D_TSS=hg38TSS
+    D_TSS=TSS_hg38
     Allgenes=allgenes_hg38
   }else if(organism == "mm10"){
     data("A_mm10")
@@ -2051,7 +2053,7 @@ plot_expression <- function(TPM=NULL, RPKM=NULL, raw_read_count=NULL, path_to_bw
 CHIPIN_normalize <- function(path_to_bw, type_norm="linear", TPM=NULL, RPKM=NULL, raw_read_count=NULL, path_to_file_with_constant_genes=NULL,
                              sample_name="sample", output_dir=".", organism, beforeRegionStartLength=4000,
                              afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE,
-                             compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal"){
+                             compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal", nThreads = 1){
   radius=4000
   step=50
   DF_before=list()
@@ -2071,7 +2073,7 @@ CHIPIN_normalize <- function(path_to_bw, type_norm="linear", TPM=NULL, RPKM=NULL
     data("TSS_hg38")
     data("allgenes_hg38")
     exon_lengths=A_hg38
-    D_TSS=hg38TSS
+    D_TSS=TSS_hg38
     Allgenes=allgenes_hg38
   }else if(organism == "mm10"){
     data("A_mm10")
@@ -2115,14 +2117,14 @@ CHIPIN_normalize <- function(path_to_bw, type_norm="linear", TPM=NULL, RPKM=NULL
   }
 
   if (type_norm=="linear" & is.null(D_TSS)==FALSE){
-    pathRenorm=linear_normalization(path_to_file_with_constant_genes, path_to_bw, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, output_dir)
+    pathRenorm=linear_normalization(path_to_file_with_constant_genes, path_to_bw, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, output_dir, nThreads)
 
     rep_stats_after=plot_after_linear(unlist(pathRenorm), output_dir, path_to_file_with_constant_genes, step, DF_after,histone_mark)
 
     rep_stats_before=plot_before_quantile(path_to_bw, output_dir, path_to_file_with_constant_genes, step, DF_before, histone_mark)
   }else if (type_norm=="quantile" & is.null(D_TSS)==FALSE){
 
-    pathRenorm=quantile_norm(path_to_bw, path_to_file_with_constant_genes, nGroup, output_dir, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize)
+    pathRenorm=quantile_norm(path_to_bw, path_to_file_with_constant_genes, nGroup, output_dir, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, nThreads)
 
     rep_stats_after=plot_after_quantile(unlist(pathRenorm), output_dir, path_to_file_with_constant_genes, step, DF_after, histone_mark)
 

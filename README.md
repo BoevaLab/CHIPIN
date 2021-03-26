@@ -54,6 +54,20 @@ Please see additional Python libraries required for Deeptools.
 https://deeptools.readthedocs.io/en/develop/content/installation.html
 
 
+We recommend to create an `anaconda` environment in which Deeptools is installed. In this case you can launch RStudio from this environment and all the path variables are set correctly.
+
+```
+# create conda environment
+conda create --name CHIPIN
+conda activate CHIPIN
+
+# install Deeptools
+conda install -c bioconda deeptools
+
+# launch RStudio from the terminal
+open -na Rstudio
+```
+
 ## INSTALLATION
 
 Use devtools for installation of CHIPIN from GitHub:
@@ -134,28 +148,29 @@ Optional parameters:
 * **compute_stat**: boolean parameter, use "compute_stat=TRUE" to compute statisctics characterizing the normalization process. This statistic will be written in the "output_StatsFile.txt" file located in the output_folder and will show how much the normalization reduced the difference between the samples/conditions. Default:FALSE
 * **nGroup**: number of gene groups for quantile normalisation. Default: 20
 * **histone_mark**: name of the histone mark of interest; used to plot legends. Default:"ChIP-seq signal"
+* **nThreads**: number of processors to use. Default: 1
 
 ```
 #### Usage:
 CHIPIN_normalize(path_to_bw, ...)
 
 ##### Using TPM values:
-CHIPIN_normalize(path_to_bw, type_norm="linear", TPM, RPKM=NULL, raw_read_count=NULL, path_to_file_with_constant_genes=NULL, sample_name, output_dir=".", organism, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal")
+CHIPIN_normalize(path_to_bw, type_norm="linear", TPM, RPKM=NULL, raw_read_count=NULL, path_to_file_with_constant_genes=NULL, sample_name, output_dir=".", organism, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal", nThreads=1)
 
 ##### Using RPKM values:
-CHIPIN_normalize(path_to_bw, type_norm="linear", TPM=NULL, RPKM, raw_read_count=NULL, path_to_file_with_constant_genes=NULL, sample_name, output_dir=".", organism, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal")
+CHIPIN_normalize(path_to_bw, type_norm="linear", TPM=NULL, RPKM, raw_read_count=NULL, path_to_file_with_constant_genes=NULL, sample_name, output_dir=".", organism, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal", nThreads=1)
 
 
 ##### Using raw read count values:
-CHIPIN_normalize(path_to_bw, type_norm="linear", TPM=NULL, RPKM=NULL, raw_read_count, path_to_file_with_constant_genes=NULL, sample_name, output_dir=".", organism, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal")
+CHIPIN_normalize(path_to_bw, type_norm="linear", TPM=NULL, RPKM=NULL, raw_read_count, path_to_file_with_constant_genes=NULL, sample_name, output_dir=".", organism, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal", nThreads=1)
 
 
 ##### Using constant genes provided by the user:
-CHIPIN_normalize(path_to_bw, type_norm="linear", TPM=NULL, RPKM=NULL, raw_read_count=NULL, path_to_file_with_constant_genes, sample_name, output_dir=".", organism, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal")
+CHIPIN_normalize(path_to_bw, type_norm="linear", TPM=NULL, RPKM=NULL, raw_read_count=NULL, path_to_file_with_constant_genes, sample_name, output_dir=".", organism, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal", nThreads=1)
 
 
 ##### Using all genes (not recommended):
-CHIPIN_normalize(path_to_bw, type_norm="linear", TPM=NULL, RPKM=NULL, raw_read_count=NULL, path_to_file_with_constant_genes=NULL, sample_name, output_dir=".", organism, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal")
+CHIPIN_normalize(path_to_bw, type_norm="linear", TPM=NULL, RPKM=NULL, raw_read_count=NULL, path_to_file_with_constant_genes=NULL, sample_name, output_dir=".", organism, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal", nThreads=1)
 
 
 ```
