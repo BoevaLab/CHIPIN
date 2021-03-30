@@ -117,12 +117,14 @@ Optional parameters:
 CHIPIN_normalize(path_to_bw, ...)
 
 ##### Using RPKM values:
-CHIPIN_normalize(path_to_bw, type_norm="linear", RPKM, raw_read_count=NULL, path_to_file_with_constant_genes=NULL, sample_name, output_dir=".", organism, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal")
+CHIPIN_normalize(path_to_bw, type_norm="linear", TPM=NULL, RPKM, raw_read_count=NULL, path_to_file_with_constant_genes=NULL, sample_name, output_dir=".", organism, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal")
 
 
 ##### Using raw read count values:
 CHIPIN_normalize(path_to_bw, type_norm="linear", RPKM=NULL, raw_read_count, path_to_file_with_constant_genes=NULL, sample_name, output_dir=".", organism, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal")
 
+##### Using TPM values:
+CHIPIN_normalize(path_to_bw, type_norm="linear", TPM, RPKM=NULL, raw_read_count=NULL, path_to_file_with_constant_genes=NULL, sample_name, output_dir=".", organism, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal")
 
 ##### Using constant genes provided by the user:
 CHIPIN_normalize(path_to_bw, type_norm="linear", RPKM=NULL, raw_read_count=NULL, path_to_file_with_constant_genes, sample_name, output_dir=".", organism, beforeRegionStartLength=4000, afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE, compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal")
