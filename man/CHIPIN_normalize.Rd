@@ -8,20 +8,24 @@
 This is the main function of the package that should be used to find the “constant genes” and perform the normalization process.
 }
 \usage{
-plot_expression(...)
+CHIPIN_normalize(...)
+
+# Using TPM values:
+CHIPIN_normalize(path_to_bw, type_norm="linear", TPM, RPKM=NULL, raw_read_count=NULL, output_dir=".", organism, histone_mark="ChIP-seq signal")
 
 #using RPKM values:
-plot_expression(path_to_bw, type_norm="linear", RPKM, raw_read_count=NULL, output_dir=".", organism, histone_mark="ChIP-seq signal")
+CHIPIN_normalize(path_to_bw, type_norm="linear", TPM=NULL, RPKM, raw_read_count=NULL, output_dir=".", organism, histone_mark="ChIP-seq signal")
 
 #using raw read count values:
-plot_expression(path_to_bw, type_norm="linear", RPKM=NULL, raw_read_count, output_dir=".", organism, histone_mark="ChIP-seq signal")
+CHIPIN_normalize(path_to_bw, type_norm="linear", TPM=NULL, RPKM=NULL, raw_read_count, output_dir=".", organism, histone_mark="ChIP-seq signal")
 }
 
 \arguments{
   \item{path_to_bw}{a vector containing paths to .bigWig files of the samples/conditions of interest. ! Mandatory parameter with no default value}
   \item{type_norm}{type of normalization to perform: 'linear' or 'quantile'. Default: 'linear'}
-  \item{RPKM}{path to a gene expression file (RPKM values): first column should contain gene names (official gene symbol), each following column should correspond to one sample/condition. The order of values should correspond to the order of .bigWig files in "path_to_bw". RPKM values will be transformed into "raw_read_count" values using information on exon lengths; then, "raw_read_count" values will be used to determine genes whose expression does not change across all the conditions ("constant_genes"). If you provide the "RPKM" parameter, do not use the "raw_read_count" parameter. If both "RPKM and "raw_read_count" parameters are set to NULL, and "path_to_file_with_constant_genes" is NULL too, then all genes will be used for the normalization; "expression_plot" (see below) will be set to FALSE. Default: NULL}
-  \item{raw_read_count}{path to a gene expression file (raw read count values): first column should contain gene names (official gene symbol), each following column should correspond to one sample/condition. The order of values should correspond to the order of .bigWig files in "path_to_bw". If you provide the "raw_read_count" parameter, do not use the "RPKM" parameter. If both "RPKM and "raw_read_count" parameters are set to NULL, and "path_to_file_with_constant_genes" is NULL too, then all genes will be used for the normalization; "expression_plot" (see below) will be set to FALSE. Default: NULL}
+  \item{TPM}{path to a gene expression file (TPM values): first column should contain gene names (official gene symbol), each following column should correspond to one sample/condition. The order of values should correspond to the order of .bigWig files in "path_to_bw". If you provide the "TPM" parameter, do not use the "raw_read_count" parameter or the "RPKM" parameter. If all gene expression parameters are set to NULL, and "path_to_file_with_constant_genes" is NULL too, then all genes will be used for the normalization; "expression_plot" (see below) will be set to FALSE. Default: NULL.}
+  \item{RPKM}{path to a gene expression file (RPKM values): first column should contain gene names (official gene symbol), each following column should correspond to one sample/condition. The order of values should correspond to the order of .bigWig files in "path_to_bw". RPKM values will be transformed into "raw_read_count" values using information on exon lengths; then, "raw_read_count" values will be used to determine genes whose expression does not change across all the conditions ("constant_genes"). If you provide the "RPKM" parameter, do not use the "raw_read_count" parameter or the "TPM" parameter. If all gene expression parameters are set to NULL, and "path_to_file_with_constant_genes" is NULL too, then all genes will be used for the normalization; "expression_plot" (see below) will be set to FALSE. Default: NULL}
+  \item{raw_read_count}{path to a gene expression file (raw read count values): first column should contain gene names (official gene symbol), each following column should correspond to one sample/condition. The order of values should correspond to the order of .bigWig files in "path_to_bw". If you provide the "raw_read_count" parameter, do not use the "RPKM" parameter or the "TPM" parameter. If all gene expression parameters are set to NULL, and "path_to_file_with_constant_genes" is NULL too, then all genes will be used for the normalization; "expression_plot" (see below) will be set to FALSE. Default: NULL}
   \item{path_to_file_with_constant_genes}{path to a .bed file with genes that do not change their expression across the conditions ("constant_genes"). If left emtpy (NULL), the list of constant genes will be determined automatically using either "RPKM" or "raw_read_count" values. Default:NULL}
   \item{sample_name}{sample name. Default: "sample"}
   \item{output_dir}{path to the output directory where one wants to store the ouput files. This directory should be created before running the function. Default: "."}
@@ -35,7 +39,6 @@ plot_expression(path_to_bw, type_norm="linear", RPKM=NULL, raw_read_count, outpu
   \item{percentage}{a value between 0 and 1 describing the percentage of the total number of genes that one wants to be defined as "constant_genes". Default: 0.1}
   \item{nGroup}{number of gene groups for quantile normalisation. Default: 20}
   \item{histone_mark}{name of the histone mark of interest; used to plot legends. Default:"ChIP-seq signal"}
-  \item{nThreads}{number of processors to use. Default: 1}
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~

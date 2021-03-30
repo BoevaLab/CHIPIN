@@ -101,18 +101,13 @@ get_readCountsfromTPM <- function(TPMvalues, exon_lengths){
   #Formula
   #CPM_i=(GeneLength_i*TPM_i)/(sum_on_j(geneLength_j*TPM_j)) where j goes through the genes.
 
-  #Compute sumBase=sum_on_j(geneLength_j*TPM_j) pour j allant de 1er au dernier gene de la liste. 
+  #Compute sumBase=sum_on_j(geneLength_j*TPM_j) pour j allant de 1er au dernier gene de la liste.
   sumBase=0
-  for (j in 1:nrow(TPMvalues)){
+  for (k in 1:nrow(TPMvalues)){
     if (as.character(unlist(TPMvalues[k,]$geneName)) %in% exonsnames){
       tmp=which(as.character(unlist(exon_lengths$geneName)) == as.character(unlist(TPMvalues[k,]$geneName)))
-      if (length(tmp>1)){
-        return(print("TPM values should be unique. Only one value for each gene."))
-
-      }else if (length(tmp)==1){
-        rep=TPMvalues[k,]$value*exon_lengths[tmp,]$value
-        sumBase=sumBase+rep
-      }
+      rep=TPMvalues[k,]$value*exon_lengths[tmp,]$value
+      sumBase=sumBase+rep
     }
   }
 
@@ -123,14 +118,10 @@ get_readCountsfromTPM <- function(TPMvalues, exon_lengths){
   for (i in 1:nrow(TPMvalues)){
     if (as.character(unlist(TPMvalues[i,]$geneName)) %in% exonsnames){
       tmp=which(as.character(unlist(exon_lengths$geneName)) == as.character(unlist(TPMvalues[i,]$geneName)))
-      if (length(tmp>1)){
-        return(print("TPM values should be unique. Only one value for each gene."))
-      }else if (length(tmp)==1){
-        rep=TPMvalues[i,]$value*exon_lengths[tmp,]$value
-        CPM_tmp=rep/(sumBase*1.0)
-        CPM_values=c(CPM_values, CPM_tmp)
-        geneNames=c(geneNames, as.character(unlist(TPMvalues[i,]$geneName)))
-      }
+      rep=TPMvalues[i,]$value*exon_lengths[tmp,]$value
+      CPM_tmp=(rep/(sumBase*1.0))*1000000
+      CPM_values=c(CPM_values, CPM_tmp)
+      geneNames=c(geneNames, as.character(unlist(TPMvalues[i,]$geneName)))
     }
   }
   repF=data.frame(geneNames, CPM_values)
@@ -426,18 +417,25 @@ find_gene_not_moving <- function(TPM, RPKM, raw_read_count, sample_name, output_
     cat("\n")
     cat("Will use TPM to find constant genes")
     cat("\n")
-    TPM_rep=read.table(TPM, header=TRUE)
-    #Remove RPKM with a geneName equal to "--"
+    TPM_rep=read.table(TPM, header=FALSE)
+    #Remove TPM with a geneName equal to "--"
     TPM_rep_NoDup=TPM_rep[which(TPM_rep$V1 != "--"),]
     n_samples=ncol(TPM_rep)-1
 
     #Get read counts for each sample
     for (k in 1:(n_samples)){
       TPM_current=data.frame(TPM_rep_NoDup[,1], TPM_rep_NoDup[,k+1])
+      print("Get read counts")
+      print(head(TPM_current))
       tmp=get_readCountsfromTPM(TPM_current, exon_lengths)
       if (k==1){
+        print("Build Dataframe")
         D=data.frame(tmp)
+        print("k=1")
       }else{
+        print("k=2")
+        print(head(D))
+        print(head(tmp))
         D=data.frame(D, tmp$CPM)
       }
     }
@@ -459,7 +457,7 @@ find_gene_not_moving <- function(TPM, RPKM, raw_read_count, sample_name, output_
     D_matrix_SD=apply(Df_matrix_NoDup[, 2:ncol(Df_matrix_NoDup)], 1, sd)
 
     pdf(paste(output_dir, sample_name, "CPMmeanVSsd.pdf", sep=""), width=5, height=5)
-    plot(log2(D_matrix_mean+1), log2(D_matrix_SD+1), xlim=c(0, max(log2(D_matrix_mean+1))+5), ylim=c(0, max(log2(D_matrix_SD+1))+5), type="p",
+    plot(log2(D_matrix_mean+1), log2(D_matrix_SD+1), xlim=c(0, max(log2(D_matrix_mean+1))+2), ylim=c(0, max(log2(D_matrix_SD+1))+2), type="p",
          xlab="log2(Average_CPM+1)", ylab="log2(SD_CPM+1)")
 
     #Now we have to select genes that do not move
@@ -497,8 +495,8 @@ find_gene_not_moving <- function(TPM, RPKM, raw_read_count, sample_name, output_
     D_matrix_mean_colors=D_matrix_mean[tmp_geneToColor]
     D_matrix_SD_colors=D_matrix_SD[tmp_geneToColor]
     points(log2(D_matrix_mean_colors+1), log2(D_matrix_SD_colors+1), col="red", pch=1)
-    dev.off()   
-  }else if (is.null(raw_read_count)==TRUE & is.null(RPKM)==TRUE){
+    dev.off()
+  }else if (is.null(raw_read_count)==TRUE & is.null(RPKM)==TRUE & is.null(TPM)==TRUE){
     cat("\n")
     cat("Will use all genes as constant genes (not recommended)")
     cat("\n")
@@ -1972,7 +1970,7 @@ plot_expression <- function(TPM=NULL, RPKM=NULL, raw_read_count=NULL, path_to_bw
     return(cat("You should provide a path to a valid output directory using the parameter 'output_dir'"))
   }
 
-  #Check if at least RPKM or raw read count has been provided
+  #Check if at least RPKM, TPM or raw read count has been provided
   if (is.null(RPKM)==TRUE & is.null(raw_read_count)==TRUE & is.null(TPM)==TRUE){
     return(cat("You should provide RPKM values or raw_read_count or TPM values"))
 
@@ -2009,7 +2007,7 @@ plot_expression <- function(TPM=NULL, RPKM=NULL, raw_read_count=NULL, path_to_bw
     RPKM_rep=read.table(TPM, header=TRUE)
 
   } else if (is.null(RPKM)==FALSE & is.null(TPM)==TRUE & is.null(raw_read_count)==TRUE){
-    #If RPKM provided -> will use it directly
+    #If only RPKM provided -> will use it directly
     RPKM_rep=read.table(RPKM, header=TRUE)
   }
   
@@ -2049,6 +2047,7 @@ plot_expression <- function(TPM=NULL, RPKM=NULL, raw_read_count=NULL, path_to_bw
   #dev.off()
   #ggsave(paste(output_dir, "expression.pdf", sep=""), gridExtra::marrangeGrob(grobs = plist_expression, nrow=2, ncol=2))
 }
+
 
 CHIPIN_normalize <- function(path_to_bw, type_norm="linear", TPM=NULL, RPKM=NULL, raw_read_count=NULL, path_to_file_with_constant_genes=NULL,
                              sample_name="sample", output_dir=".", organism, beforeRegionStartLength=4000,

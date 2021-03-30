@@ -9,13 +9,14 @@ Use plot_expression to profile the average ChIP-seq signal around gene TSS accor
 }
 \usage{
 
-plot_expression(RPKM=NULL, raw_read_count=NULL, path_to_bw, organism, output_dir = ".", histone_mark = "ChIP-seq signal")
+plot_expression(TPM, RPKM=NULL, raw_read_count=NULL, path_to_bw, organism, output_dir = ".", histone_mark = "ChIP-seq signal")
 
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-   \item{RPKM}{path to a gene expression file (RPKM values): first column should contain gene names (official gene symbol), each following column should correspond to one sample/condition. The order of values should correspond to the order of .bigWig files in "path_to_bw". If you provide the "RPKM" parameter, do not use the "raw_read_count" parameter. Default: NULL}
-  \item{raw_read_count}{path to a gene expression file (raw read count values): first column should contain gene names (official gene symbol), each following column should correspond to one sample/condition. The order of values should correspond to the order of .bigWig files in "path_to_bw". Raw read count values will be transformed into RPKM values using information on exon lengths. If you provide the "raw_read_count" parameter, do not use the "RPKM" parameter. Default: NULL}
+  \item{TPM}{path to a gene expression file (TPM values): first column should contain gene names (official gene symbol), each following column should correspond to one sample/condition. The order of values should correspond to the order of .bigWig files in "path_to_bw". If you provide the "TPM" parameter, do not use the "raw_read_count" parameter or the "RPKM" parameter. Default: NULL.}
+   \item{RPKM}{path to a gene expression file (RPKM values): first column should contain gene names (official gene symbol), each following column should correspond to one sample/condition. The order of values should correspond to the order of .bigWig files in "path_to_bw". If you provide the "RPKM" parameter, do not use the "raw_read_count" parameter or the "TPM" paramter. Default: NULL}
+  \item{raw_read_count}{path to a gene expression file (raw read count values): first column should contain gene names (official gene symbol), each following column should correspond to one sample/condition. The order of values should correspond to the order of .bigWig files in "path_to_bw". Raw read count values will be transformed into RPKM values using information on exon lengths. If you provide the "raw_read_count" parameter, do not use the "RPKM" parameter or the "TPM" parameter. Default: NULL}
   \item{path_to_bw}{a vector containing paths to .bigWig files of the samples/conditions of interest. ! Mandatory parameter with no default value}
   \item{output_dir}{path to the output directory where one wants to store the ouput files. This directory should be created before running the function. Default: "."}
   \item{organism}{reference genome: "mm10", "mm9", "hg38" or "hg19". ! Mandatory parameter with no default value}
