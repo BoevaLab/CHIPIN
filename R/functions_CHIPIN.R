@@ -836,7 +836,7 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
           }
           sample_nametmp1=strsplit(bw_current[k], "/")[[1]]
           sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
-          sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
+          #sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
           sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
@@ -894,7 +894,7 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
 
           sample_nametmp1=strsplit(path_to_bw[(nPlotted+j)], "/")[[1]]
           sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
-          sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
+          #sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
           sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
@@ -913,7 +913,7 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
           sample_nametmp1=strsplit(path_to_bw[(nPlotted+j)], "/")[[1]]
           sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
 
-          sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
+          #sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
           sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
@@ -957,7 +957,7 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
       sample_nametmp1=strsplit(bw_current[k], "/")[[1]]
       sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
 
-      sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
+      #sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
       #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
       sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
@@ -1050,7 +1050,7 @@ plot_after_linear<-function(path_to_bw, output_folder, path_to_file_with_constan
           sample_nametmp1=strsplit(bw_current[k], "/")[[1]]
           sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
 
-          sample_name=paste(c(strsplit(sample_nametmp1, "[.]")[[1]][1:length(strsplit(sample_nametmp1, "[.]")[[1]])-1]), collapse="")
+          #sample_name=paste(c(strsplit(sample_nametmp1, "[.]")[[1]][1:length(strsplit(sample_nametmp1, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
           sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
@@ -1109,7 +1109,7 @@ plot_after_linear<-function(path_to_bw, output_folder, path_to_file_with_constan
           sample_nametmp1=strsplit(path_to_bw[(nPlotted+j)], "/")[[1]]
           sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
 
-          sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
+          #sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
           sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
@@ -1125,7 +1125,7 @@ plot_after_linear<-function(path_to_bw, output_folder, path_to_file_with_constan
           sample_nametmp1=strsplit(path_to_bw[(nPlotted+j)], "/")[[1]]
           sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
 
-          sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
+          #sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
           sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
@@ -1165,7 +1165,7 @@ plot_after_linear<-function(path_to_bw, output_folder, path_to_file_with_constan
       sample_nametmp1=strsplit(bw_current[k], "/")[[1]]
       sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
 
-      sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
+      #sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
       #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
       sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
@@ -1258,7 +1258,7 @@ plot_before_quantile<-function(path_to_bw, output_folder, path_to_file_with_cons
           sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
 
 
-          sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
+          #sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
           sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
@@ -1318,7 +1318,7 @@ plot_before_quantile<-function(path_to_bw, output_folder, path_to_file_with_cons
           sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
 
 
-          sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
+          #sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
           sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
@@ -1334,7 +1334,7 @@ plot_before_quantile<-function(path_to_bw, output_folder, path_to_file_with_cons
           sample_nametmp1=strsplit(path_to_bw[(nPlotted+j)], "/")[[1]]
           sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
 
-          sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
+          #sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
           sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
@@ -1374,7 +1374,7 @@ plot_before_quantile<-function(path_to_bw, output_folder, path_to_file_with_cons
       sample_nametmp1=strsplit(bw_current[k], "/")[[1]]
       sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
 
-      sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
+      #sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
       #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
       sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
