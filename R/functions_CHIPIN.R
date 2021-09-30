@@ -838,6 +838,7 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
           sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
           sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
+          sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
           #sample_name_final=strsplit(sample_name, "_")[[1]][2]
           #if (is.na(sample_name_final)){sample_name_final=sample_name}
@@ -895,6 +896,7 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
           sample_nametmp2=sample_nametmp1[length(sample_nametmp1)]
           sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
+          sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
           #sample_name_final=strsplit(sample_name, "_")[[1]][2]
           #if(is.na(sample_name_final)){sample_name_final=sample_name}
@@ -913,6 +915,7 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
 
           sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
+          sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
           #sample_name_final=strsplit(sample_name, "_")[[1]][2]
           #if(is.na(sample_name_final)){sample_name_final=sample_name}
@@ -956,6 +959,7 @@ plot_after_quantile<-function(path_to_bw, output_folder, path_to_file_with_const
 
       sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
       #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
+      sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
       #sample_name_final=strsplit(sample_name, "_")[[1]][2]
       #if(is.na(sample_name_final)){sample_name_final=sample_name}
@@ -1048,6 +1052,7 @@ plot_after_linear<-function(path_to_bw, output_folder, path_to_file_with_constan
 
           sample_name=paste(c(strsplit(sample_nametmp1, "[.]")[[1]][1:length(strsplit(sample_nametmp1, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
+          sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
           mylegend=c(mylegend, sample_name)
           #sample_name_final=strsplit(sample_name, "_")[[1]][2]
@@ -1106,6 +1111,7 @@ plot_after_linear<-function(path_to_bw, output_folder, path_to_file_with_constan
 
           sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
+          sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
           mylegend=c(mylegend, sample_name)
           print(mylegend)
@@ -1121,6 +1127,7 @@ plot_after_linear<-function(path_to_bw, output_folder, path_to_file_with_constan
 
           sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
+          sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
           mylegend=c(mylegend, sample_name)
         }
@@ -1160,6 +1167,7 @@ plot_after_linear<-function(path_to_bw, output_folder, path_to_file_with_constan
 
       sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
       #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
+      sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
       #sample_name_final=strsplit(sample_name, "_")[[1]][2]
       #sample_name_final=paste(sample_name_tmp[1], sample_name_tmp[2], sep="_")
@@ -1252,6 +1260,7 @@ plot_before_quantile<-function(path_to_bw, output_folder, path_to_file_with_cons
 
           sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
+          sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
           mylegend=c(mylegend, sample_name)
           #sample_name_final=strsplit(sample_name, "_")[[1]][2]
@@ -1311,6 +1320,7 @@ plot_before_quantile<-function(path_to_bw, output_folder, path_to_file_with_cons
 
           sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
+          sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
           mylegend=c(mylegend, sample_name)
           print(mylegend)
@@ -1326,6 +1336,7 @@ plot_before_quantile<-function(path_to_bw, output_folder, path_to_file_with_cons
 
           sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
           #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
+          sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
           mylegend=c(mylegend, sample_name)
         }
@@ -1365,6 +1376,7 @@ plot_before_quantile<-function(path_to_bw, output_folder, path_to_file_with_cons
 
       sample_name=paste(c(strsplit(sample_nametmp2, "[.]")[[1]][1:length(strsplit(sample_nametmp2, "[.]")[[1]])-1]), collapse="")
       #sample_name=strsplit(sample_nametmp2, ".bw")[[1]]
+      sample_name= strsplit(sample_nametmp2, split = "[.]")[[1]][1]
 
       #sample_name_final=strsplit(sample_name, "_")[[1]][2]
       #sample_name_final=paste(sample_name_tmp[1], sample_name_tmp[2], sep="_")
@@ -1922,7 +1934,8 @@ plot_expression <- function(TPM=NULL, RPKM=NULL, raw_read_count=NULL, path_to_bw
     data("TSS_hg38")
     data("allgenes_hg38")
     exon_lengths=A_hg38
-    D_TSS=TSS_hg38
+    #D_TSS=TSS_hg38
+    D_TSS=hg38TSS # New Name
     Allgenes=allgenes_hg38
   }else if(organism == "mm10"){
     data("A_mm10")
@@ -2072,7 +2085,8 @@ CHIPIN_normalize <- function(path_to_bw, type_norm="linear", TPM=NULL, RPKM=NULL
     data("TSS_hg38")
     data("allgenes_hg38")
     exon_lengths=A_hg38
-    D_TSS=TSS_hg38
+    #D_TSS=TSS_hg38
+    D_TSS=hg38TSS
     Allgenes=allgenes_hg38
   }else if(organism == "mm10"){
     data("A_mm10")
