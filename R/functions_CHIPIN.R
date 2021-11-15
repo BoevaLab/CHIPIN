@@ -188,7 +188,7 @@ get_RPKM<-function(raw_read_count, exon_lengths){
 #######
 prepareRegionToPlot_strandInDataP <- function(dataP, radius, step){
   regionsToPlot=makeGRangesFromDataFrame(dataP, keep.extra.columns=TRUE, start.field="start", end.field="stop", strand.field = "strand")
-  myListOfCentralRegionsToPlot=GenomicRangesList()
+  myListOfCentralRegionsToPlot=GRangesList()
   centers=as.numeric(as.character(unlist(dataP$peakmax)))
   add=dataP$geneName
   myListOfCentralRegionsToPlot=GRanges(seqnames(regionsToPlot), IRanges(centers-radius,centers+radius)[1:length(regionsToPlot)])
