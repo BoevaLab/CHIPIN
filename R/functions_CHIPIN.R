@@ -169,7 +169,7 @@ get_RPKM<-function(raw_read_count, exon_lengths){
     if (as.character(unlist(raw_read_count[k,]$geneName)) %in% as.character(unlist(exon_lengths$geneName))){
       tmp=which(as.character(unlist(exon_lengths$geneName)) == as.character(unlist(raw_read_count[k,]$geneName)))
       geneName=c(geneName, as.character(unlist(raw_read_count[k,]$geneName)))
-      RPKM_val=ceiling(raw_read_count[k,]$value/exon_lengths[tmp,]$value)*((10^9)/sum(raw_read_count$value))
+      RPKM_val=ceiling(raw_read_count[k,]$value/exon_lengths[tmp,]$value)*((10^6)/sum(raw_read_count$value))
 
       RPKM_final=c(RPKM_final, RPKM_val)
 
