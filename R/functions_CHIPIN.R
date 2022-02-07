@@ -281,7 +281,7 @@ find_gene_not_moving <- function(TPM, RPKM, raw_read_count, sample_name, output_
     Df_matrix=data.frame()
     #Do the sum on the duplicates: we sum the values for each replicates in the case of several transcipts
     for (k in 1:length(geneNameToGetThrough)){
-      Df_matrix=rbind(Df_matrix, colSums(CPMvalues_all[which(CPMvalues_all$geneName == as.character(unlist(geneNameToGetThrough[k]))),2:ncol(CPM_rep)]))
+      Df_matrix=rbind(Df_matrix, colSums(CPMvalues_all[which(CPMvalues_all[,1] == as.character(unlist(geneNameToGetThrough[k]))),2:ncol(CPM_rep)]))
     }
     Df_matrix_NoDup=cbind(geneNameToGetThrough, Df_matrix)
     #Compute mean and standard deviation
