@@ -2065,7 +2065,8 @@ plot_expression <- function(TPM=NULL, RPKM=NULL, raw_read_count=NULL, path_to_bw
 CHIPIN_normalize <- function(path_to_bw, type_norm="linear", TPM=NULL, RPKM=NULL, raw_read_count=NULL, path_to_file_with_constant_genes=NULL,
                              sample_name="sample", output_dir=".", organism, beforeRegionStartLength=4000,
                              afterRegionStartLength=4000, regionBodyLength=40000, binSize=10, expression_plot=FALSE,
-                             compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal", nThreads = 1){
+                             compute_stat=FALSE, percentage=0.1, nGroup=20, histone_mark="ChIP-seq signal", nThreads = 1,
+                             computeMatrixPath = "computeMatrix"){
   radius=4000
   step=50
   DF_before=list()
@@ -2130,14 +2131,14 @@ CHIPIN_normalize <- function(path_to_bw, type_norm="linear", TPM=NULL, RPKM=NULL
   }
 
   if (type_norm=="linear" & is.null(D_TSS)==FALSE){
-    pathRenorm=linear_normalization(path_to_file_with_constant_genes, path_to_bw, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, output_dir, nThreads)
+    pathRenorm=linear_normalization(path_to_file_with_constant_genes, path_to_bw, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, output_dir, nThreads, computeMatrixPath = computeMatrixPath)
 
     rep_stats_after=plot_after_linear(unlist(pathRenorm), output_dir, path_to_file_with_constant_genes, step, DF_after,histone_mark)
 
     rep_stats_before=plot_before_quantile(path_to_bw, output_dir, path_to_file_with_constant_genes, step, DF_before, histone_mark)
   }else if (type_norm=="quantile" & is.null(D_TSS)==FALSE){
 
-    pathRenorm=quantile_norm(path_to_bw, path_to_file_with_constant_genes, nGroup, output_dir, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, nThreads)
+    pathRenorm=quantile_norm(path_to_bw, path_to_file_with_constant_genes, nGroup, output_dir, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, nThreads, computeMatrixPath = computeMatrixPath)
 
     rep_stats_after=plot_after_quantile(unlist(pathRenorm), output_dir, path_to_file_with_constant_genes, step, DF_after, histone_mark)
 
