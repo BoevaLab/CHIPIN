@@ -528,7 +528,7 @@ find_gene_not_moving <- function(TPM, RPKM, raw_read_count, sample_name, output_
 #######
 #run deeptools using genes not moving determined by find_gene_not_moving or supplied by the user then perform linear normalization with non zero intercept
 #######
-linear_normalization <- function(constant_genes_file, path_to_bw, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, output_dir, nThreads){
+linear_normalization <- function(constant_genes_file, path_to_bw, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, output_dir, nThreads, computeMatrixPath = "computeMatrix"){
   cat("\n")
   cat("*****************************************")
   cat("\n")
@@ -585,7 +585,7 @@ linear_normalization <- function(constant_genes_file, path_to_bw, beforeRegionSt
   cat("\n")
   cat("Run deeptools for reference sample")
   cat("\n")
-  system(paste("computeMatrix scale-regions -S", bw1, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name, "-p", nThreads))
+  system(paste(computeMatrixPath, "scale-regions -S", bw1, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name, "-p", nThreads))
   matrix <- read.delim(output_name, header=FALSE, comment.char="@")
   val=data.frame(matrix[,7:ncol(matrix)])
   moyC1=apply(val, 2, function(x){return(mean(na.rm=TRUE, as.numeric(as.character(unlist(x)))))})
@@ -608,7 +608,7 @@ linear_normalization <- function(constant_genes_file, path_to_bw, beforeRegionSt
     cat(sample_name)
     cat("\n")
 
-    system(paste("computeMatrix scale-regions -S", bw1, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name, "-p", nThreads))
+    system(paste(computeMatrixPath, "scale-regions -S", bw1, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name, "-p", nThreads))
     cat("deeptools done")
     #Now all matrices are computed.
 
@@ -667,7 +667,7 @@ linear_normalization <- function(constant_genes_file, path_to_bw, beforeRegionSt
 #######
 #run deeptools using genes not moving determined by find_gene_not_moving or supplied by the user then perform quantile normalization
 #######
-quantile_norm <- function(path_to_bw, constant_genes_file, nGroup, output_folder, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, nThreads){
+quantile_norm <- function(path_to_bw, constant_genes_file, nGroup, output_folder, beforeRegionStartLength, afterRegionStartLength, regionBodyLength, binSize, nThreads, computeMatrixPath = "computeMatrix"){
   cat("\n")
   cat("*****************************************")
   cat("\n")
@@ -690,7 +690,7 @@ quantile_norm <- function(path_to_bw, constant_genes_file, nGroup, output_folder
     cat("\n")
     cat(sample_name)
     cat("\n")
-    system(paste("computeMatrix scale-regions -S", current_bw, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name, "-p", nThreads))
+    system(paste(computeMatrixPath, "scale-regions -S", current_bw, "-R", constant_genes_file, "--beforeRegionStartLength", beforeRegionStartLength, "--afterRegionStartLength", afterRegionStartLength, "--regionBodyLength", regionBodyLength, "--binSize", binSize, "-o", output_name, "-p", nThreads))
     matrix <- read.delim(output_name, header=FALSE, comment.char="@")
     current_values=unlist(matrix[,7:ncol(matrix)], use.names=FALSE)
     current_values[which(is.nan(current_values)==TRUE)]=0
